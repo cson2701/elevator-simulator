@@ -11,6 +11,9 @@ class ElevatorViewModel : ViewModel() {
     private val _currentFloor = MutableLiveData(-99)
     val currentFloor: LiveData<Int> = _currentFloor
 
+    private val _isTargetReached = MutableLiveData(false)
+    val isTargetFloorReached: LiveData<Boolean> = _isTargetReached
+
     companion object {
         //@formatter:off
         const val targetFloor = 4
@@ -41,7 +44,13 @@ class ElevatorViewModel : ViewModel() {
                     _currentFloor.postValue(currentFloor)
                 }
             })
-            println(if (isElevatorArrived) "Ding!" else "Ah oh")
+            if (isElevatorArrived) {
+                _isTargetReached.postValue(true)
+                println("Ding!")
+            } else {
+                _isTargetReached.postValue(false)
+                println("Ah oh")
+            }
         }
     }
 }
