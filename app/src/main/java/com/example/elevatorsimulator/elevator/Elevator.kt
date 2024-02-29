@@ -1,19 +1,21 @@
 package com.example.elevatorsimulator.elevator
 
+import kotlinx.coroutines.delay
+
 class Elevator(
     private val lowestFloor: Int,
     private val highestFloor: Int,
     var currentFloor: Int,
-    private val speed: Long
+    private val speed: Long,
 ) : ElevatorInterface {
 //    val numberOfFloors = 10
 
-    override fun move(targetFloor: Int, floorChangeListener: FloorChangeListener): Boolean {
+    override suspend fun move(targetFloor: Int, floorChangeListener: FloorChangeListener): Boolean {
         if (!isValidTargetFloor(targetFloor)) {
             return false
         }
         while (!isTargetFloorReached(targetFloor, currentFloor)) {
-            Thread.sleep(speed)
+            delay(speed)
             if (currentFloor < targetFloor) {
                 currentFloor++
             } else {
@@ -24,7 +26,8 @@ class Elevator(
         return true
     }
 
-    private fun isTargetFloorReached(targetFloor: Int, currentFloor: Int) = targetFloor == currentFloor
+    private fun isTargetFloorReached(targetFloor: Int, currentFloor: Int) =
+        targetFloor == currentFloor
 
     private fun isValidTargetFloor(targetFloor: Int) =
         !(targetFloor > highestFloor || targetFloor < lowestFloor)
