@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.ElevatorViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,11 +43,13 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
         Text(
             text = when (elevatorStatus) {
                 ElevatorProps.Status.MOVING_UP -> {
-                    "^"
+                    "◭"
                 }
+
                 ElevatorProps.Status.MOVING_DOWN -> {
-                    "v"
+                    "⧩"
                 }
+
                 else -> {
                     ""
                 }
@@ -54,8 +58,21 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
         Text(
             text = if (currentFloor == -99) "--" else currentFloor.toString(),
         )
+
+        var ding by remember {
+            mutableStateOf("")
+        }
+        LaunchedEffect(isTargetFloorReached) {
+            ding = if (isTargetFloorReached == true) {
+                "Ding!"
+            } else {
+                ""
+            }
+            delay(2000)
+            ding = ""
+        }
         Text(
-            text = if (isTargetFloorReached == true) "Ding!" else "",
+            text = ding,
         )
         Spacer(modifier = Modifier.weight(1f))
         Row {

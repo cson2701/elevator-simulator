@@ -19,7 +19,6 @@ class ElevatorViewModel : ViewModel() {
 
     companion object {
         //@formatter:off
-        const val targetFloor = 4
         const val LOWEST_FLOOR = 1
         const val HIGHEST_FLOOR = 10
         const val CURRENT_FLOOR = 7
@@ -35,18 +34,11 @@ class ElevatorViewModel : ViewModel() {
         .setNumberOfElevators(1)
         .build()
 
-    init {
-        println("Elevator is on floor ${elevator.currentFloor}")
-        println("Target floor: $targetFloor")
-        println("===")
-    }
-
     fun move(targetFloor: Int) {
         _isTargetReached.postValue(false)
         viewModelScope.launch(Dispatchers.IO) {
             val isElevatorArrived = elevator.move(targetFloor, object : ElevatorListener {
                 override fun onFloorChangeListener(currentFloor: Int) {
-                    println("currentFloor = $currentFloor")
                     _currentFloor.postValue(currentFloor)
                 }
 
@@ -56,10 +48,8 @@ class ElevatorViewModel : ViewModel() {
             })
             if (isElevatorArrived) {
                 _isTargetReached.postValue(true)
-                println("Ding!")
             } else {
                 _isTargetReached.postValue(false)
-                println("Ah oh")
             }
         }
     }
