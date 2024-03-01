@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.ElevatorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +27,7 @@ import com.example.elevatorsimulator.elevator.ElevatorViewModel
 fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
     val currentFloor by elevatorViewModel.currentFloor.observeAsState()
     val isTargetFloorReached by elevatorViewModel.isTargetFloorReached.observeAsState()
+    val elevatorStatus by elevatorViewModel.elevatorStatus.observeAsState()
 
     var targetFloorInput by remember {
         mutableStateOf("")
@@ -36,7 +39,20 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
             .padding(16.dp)
     ) {
         Text(
-            text = if (currentFloor == -99) "Elevator not started" else currentFloor.toString(),
+            text = when (elevatorStatus) {
+                ElevatorProps.Status.MOVING_UP -> {
+                    "^"
+                }
+                ElevatorProps.Status.MOVING_DOWN -> {
+                    "v"
+                }
+                else -> {
+                    ""
+                }
+            },
+        )
+        Text(
+            text = if (currentFloor == -99) "--" else currentFloor.toString(),
         )
         Text(
             text = if (isTargetFloorReached == true) "Ding!" else "",

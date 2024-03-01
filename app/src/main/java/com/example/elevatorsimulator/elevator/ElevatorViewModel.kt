@@ -14,6 +14,9 @@ class ElevatorViewModel : ViewModel() {
     private val _isTargetReached = MutableLiveData(false)
     val isTargetFloorReached: LiveData<Boolean> = _isTargetReached
 
+    private val _elevatorStatus = MutableLiveData(ElevatorProps.Status.IDLE)
+    val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
+
     companion object {
         //@formatter:off
         const val targetFloor = 4
@@ -41,10 +44,14 @@ class ElevatorViewModel : ViewModel() {
     fun move(targetFloor: Int) {
         _isTargetReached.postValue(false)
         viewModelScope.launch(Dispatchers.IO) {
-            val isElevatorArrived = elevator.move(targetFloor, object : FloorChangeListener {
+            val isElevatorArrived = elevator.move(targetFloor, object : ElevatorListener {
                 override fun onFloorChangeListener(currentFloor: Int) {
                     println("currentFloor = $currentFloor")
                     _currentFloor.postValue(currentFloor)
+                }
+
+                override fun onStatusChangeListener(status: ElevatorProps.Status) {
+                    _elevatorStatus.postValue(elevator.status())
                 }
             })
             if (isElevatorArrived) {
