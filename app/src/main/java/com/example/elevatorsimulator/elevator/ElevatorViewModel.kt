@@ -20,23 +20,26 @@ class ElevatorViewModel : ViewModel() {
         const val LOWEST_FLOOR = 1
         const val HIGHEST_FLOOR = 10
         const val CURRENT_FLOOR = 7
-        val SPEED = ElevatorSpeed.SPEED_1.value
+        val SPEED = ElevatorProps.Speed.SPEED_1.value
         //@formatter:on
     }
 
+    private val elevator: Elevator = ElevatorBuilder()
+        .setLowestFloor(LOWEST_FLOOR)
+        .setHighestFloor(HIGHEST_FLOOR)
+        .setCurrentFloor(CURRENT_FLOOR)
+        .setSpeed(SPEED)
+        .setNumberOfElevators(1)
+        .build()
+
     init {
-        val elevator = ElevatorBuilder()
-            .setLowestFloor(LOWEST_FLOOR)
-            .setHighestFloor(HIGHEST_FLOOR)
-            .setCurrentFloor(CURRENT_FLOOR)
-            .setSpeed(SPEED)
-            .setNumberOfElevators(1)
-            .build()
-
         println("Elevator is on floor ${elevator.currentFloor}")
-        println("Target floor: ${targetFloor}")
+        println("Target floor: $targetFloor")
         println("===")
+    }
 
+    fun move(targetFloor: Int) {
+        _isTargetReached.postValue(false)
         viewModelScope.launch(Dispatchers.IO) {
             val isElevatorArrived = elevator.move(targetFloor, object : FloorChangeListener {
                 override fun onFloorChangeListener(currentFloor: Int) {
