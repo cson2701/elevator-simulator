@@ -33,10 +33,10 @@ class Elevator(
     }
 
     override suspend fun powerOn() {
-        delay(2700)
+        delay(2500)
         setStatus(ElevatorProps.Status.POWER_ON)
         elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_ON)
-        delay(1000)
+        delay(500)
         setStatus(ElevatorProps.Status.IDLE)
         elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
     }

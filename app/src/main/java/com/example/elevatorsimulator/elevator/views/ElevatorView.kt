@@ -69,7 +69,7 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
         )
     }
 
-    LaunchedEffect(key1 = elevatorStatus){
+    LaunchedEffect(key1 = elevatorStatus) {
         if (elevatorStatus == ElevatorProps.Status.POWER_ON) {
             Toast
                 .makeText(context, "Powered on!", Toast.LENGTH_SHORT)
@@ -119,6 +119,7 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
         Spacer(modifier = Modifier.weight(1f))
         Row {
             TextField(
+                singleLine = true,
                 modifier = Modifier.padding(8.dp),
                 value = targetFloorInput,
                 onValueChange = { targetFloorInput = it },
@@ -126,9 +127,11 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Button(
+                enabled = elevatorStatus == ElevatorProps.Status.IDLE && targetFloorInput.isNotBlank(),
                 modifier = Modifier.padding(8.dp),
                 onClick = {
                     elevatorViewModel.move(targetFloorInput.toInt())
+                    targetFloorInput = ""
                 }
             ) {
                 Text(text = "Go!")

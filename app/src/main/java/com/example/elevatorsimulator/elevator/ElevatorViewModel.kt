@@ -5,16 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
     companion object {
-        //@formatter:off
         const val LOWEST_FLOOR = 1
         const val HIGHEST_FLOOR = 10
         const val CURRENT_FLOOR = 7
         val SPEED = ElevatorProps.Speed.SPEED_1.value
-        //@formatter:on
     }
 
     private val _currentFloor = MutableLiveData(CURRENT_FLOOR)
@@ -27,12 +26,14 @@ class ElevatorViewModel : ViewModel() {
     val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
 
 
-    private val elevator: Elevator = ElevatorBuilder(object :ElevatorListener{
+    private val elevator: Elevator = ElevatorBuilder(object : ElevatorListener {
         override fun onFloorChangeListener(currentFloor: Int) {
+            println("currentFloor = $currentFloor")
             _currentFloor.postValue(currentFloor)
         }
 
         override fun onStatusChangeListener(status: ElevatorProps.Status) {
+            println("status = $status")
             _elevatorStatus.postValue(status)
         }
     })
@@ -50,12 +51,10 @@ class ElevatorViewModel : ViewModel() {
     }
 
     fun move(targetFloor: Int) {
-        _isTargetReached.postValue(false)
         viewModelScope.launch(Dispatchers.IO) {
-            val isElevatorArrived = elevator.move(targetFloor)
-            _isTargetReached.postValue(
-                isElevatorArrived
-            )
+            _isTargetReached.postValue(false)
+            delay(100) // added a delay to let the view have time to react to previous false
+            _isTargetReached.postValue(elevator.move(targetFloor))
         }
     }
 }
