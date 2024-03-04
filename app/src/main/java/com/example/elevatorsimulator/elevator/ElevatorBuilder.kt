@@ -1,6 +1,6 @@
 package com.example.elevatorsimulator.elevator
 
-class ElevatorBuilder {
+class ElevatorBuilder(private val elevatorListener: ElevatorListener) {
     private var numberOfElevators = 1
     private var lowestFloor = 1
     private var highestFloor = 1
@@ -33,6 +33,6 @@ class ElevatorBuilder {
     }
 
     fun build(): Elevator {
-        return Elevator(lowestFloor, highestFloor, currentFloor, speed)
+        return Elevator(lowestFloor, highestFloor, currentFloor, speed, elevatorListener)
     }
 }

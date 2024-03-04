@@ -8,15 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
-    private val _currentFloor = MutableLiveData(-99)
-    val currentFloor: LiveData<Int> = _currentFloor
-
-    private val _isTargetReached = MutableLiveData(false)
-    val isTargetFloorReached: LiveData<Boolean> = _isTargetReached
-
-    private val _elevatorStatus = MutableLiveData(ElevatorProps.Status.IDLE)
-    val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
-
     companion object {
         //@formatter:off
         const val LOWEST_FLOOR = 1
@@ -26,7 +17,25 @@ class ElevatorViewModel : ViewModel() {
         //@formatter:on
     }
 
-    private val elevator: Elevator = ElevatorBuilder()
+    private val _currentFloor = MutableLiveData(CURRENT_FLOOR)
+    val currentFloor: LiveData<Int> = _currentFloor
+
+    private val _isTargetReached = MutableLiveData(false)
+    val isTargetFloorReached: LiveData<Boolean> = _isTargetReached
+
+    private val _elevatorStatus = MutableLiveData(ElevatorProps.Status.POWER_OFF)
+    val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
+
+
+    private val elevator: Elevator = ElevatorBuilder(object :ElevatorListener{
+        override fun onFloorChangeListener(currentFloor: Int) {
+            _currentFloor.postValue(currentFloor)
+        }
+
+        override fun onStatusChangeListener(status: ElevatorProps.Status) {
+            _elevatorStatus.postValue(status)
+        }
+    })
         .setLowestFloor(LOWEST_FLOOR)
         .setHighestFloor(HIGHEST_FLOOR)
         .setCurrentFloor(CURRENT_FLOOR)
@@ -34,23 +43,19 @@ class ElevatorViewModel : ViewModel() {
         .setNumberOfElevators(1)
         .build()
 
+    fun powerOn() {
+        viewModelScope.launch(Dispatchers.IO) {
+            elevator.powerOn()
+        }
+    }
+
     fun move(targetFloor: Int) {
         _isTargetReached.postValue(false)
         viewModelScope.launch(Dispatchers.IO) {
-            val isElevatorArrived = elevator.move(targetFloor, object : ElevatorListener {
-                override fun onFloorChangeListener(currentFloor: Int) {
-                    _currentFloor.postValue(currentFloor)
-                }
-
-                override fun onStatusChangeListener(status: ElevatorProps.Status) {
-                    _elevatorStatus.postValue(elevator.status())
-                }
-            })
-            if (isElevatorArrived) {
-                _isTargetReached.postValue(true)
-            } else {
-                _isTargetReached.postValue(false)
-            }
+            val isElevatorArrived = elevator.move(targetFloor)
+            _isTargetReached.postValue(
+                isElevatorArrived
+            )
         }
     }
 }

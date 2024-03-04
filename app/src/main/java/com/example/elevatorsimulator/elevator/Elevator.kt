@@ -5,13 +5,13 @@ import kotlinx.coroutines.delay
 class Elevator(
     private val lowestFloor: Int,
     private val highestFloor: Int,
-    var currentFloor: Int,
+    private var currentFloor: Int,
     private val speed: Long,
+    private val elevatorListener: ElevatorListener,
 ) : ElevatorInterface {
 
-    private lateinit var status: ElevatorProps.Status
-
-    override suspend fun move(targetFloor: Int, elevatorListener: ElevatorListener): Boolean {
+    private var status: ElevatorProps.Status = ElevatorProps.Status.POWER_OFF
+    override suspend fun move(targetFloor: Int): Boolean {
         if (!isValidTargetFloor(targetFloor)) {
             return false
         }
@@ -30,6 +30,15 @@ class Elevator(
         setStatus(ElevatorProps.Status.IDLE)
         elevatorListener.onStatusChangeListener(ElevatorProps.Status.IDLE)
         return true
+    }
+
+    override suspend fun powerOn() {
+        delay(2700)
+        setStatus(ElevatorProps.Status.POWER_ON)
+        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_ON)
+        delay(1000)
+        setStatus(ElevatorProps.Status.IDLE)
+        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
     }
 
     override fun status(): ElevatorProps.Status {
