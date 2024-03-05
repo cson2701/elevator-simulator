@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,7 +55,12 @@ class ElevatorViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             _isTargetReached.postValue(false)
             delay(100) // added a delay to let the view have time to react to previous false
-            _isTargetReached.postValue(elevator.move(targetFloor))
+            try {
+                _isTargetReached.postValue(elevator.move(targetFloor))
+            } catch (e: ElevatorNotPoweredOnException) {
+                e.printStackTrace()
+                System.err.println("Disable UI before powering on the elevator")
+            }
         }
     }
 }

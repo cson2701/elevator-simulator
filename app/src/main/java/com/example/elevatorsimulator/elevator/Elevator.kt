@@ -12,6 +12,8 @@ class Elevator(
 ) : ElevatorInterface {
 
     private var status: ElevatorProps.Status = ElevatorProps.Status.POWER_OFF
+
+    @Throws(ElevatorNotPoweredOnException::class)
     override suspend fun move(targetFloor: Int): Boolean {
         if (status() == ElevatorProps.Status.POWER_OFF) {
             throw ElevatorNotPoweredOnException("Elevator status is POWER_OFF. Call powerOn() before starting any operations.")
