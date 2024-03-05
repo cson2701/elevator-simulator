@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator
 
+import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
 import kotlinx.coroutines.delay
 
 class Elevator(
@@ -12,6 +13,9 @@ class Elevator(
 
     private var status: ElevatorProps.Status = ElevatorProps.Status.POWER_OFF
     override suspend fun move(targetFloor: Int): Boolean {
+        if (status() == ElevatorProps.Status.POWER_OFF) {
+            throw ElevatorNotPoweredOnException("Elevator status is POWER_OFF. Call powerOn() before starting any operations.")
+        }
         if (!isValidTargetFloor(targetFloor)) {
             return false
         }
