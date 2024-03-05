@@ -6,4 +6,6 @@ interface ElevatorInterface {
     fun status(): ElevatorProps.Status
 
     suspend fun powerOn()
+
+    fun powerOff()
 }

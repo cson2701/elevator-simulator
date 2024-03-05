@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator
 
+import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotIdleException
 import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
 import kotlinx.coroutines.delay
 
@@ -15,7 +16,7 @@ class Elevator(
 
     @Throws(ElevatorNotPoweredOnException::class)
     override suspend fun move(targetFloor: Int): Boolean {
-        if (status() == ElevatorProps.Status.POWER_OFF) {
+        if (status == ElevatorProps.Status.POWER_OFF) {
             throw ElevatorNotPoweredOnException("Elevator status is POWER_OFF. Call powerOn() before starting any operations.")
         }
         if (!isValidTargetFloor(targetFloor)) {
@@ -39,12 +40,22 @@ class Elevator(
     }
 
     override suspend fun powerOn() {
-        delay(2500)
-        setStatus(ElevatorProps.Status.POWER_ON)
-        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_ON)
-        delay(500)
-        setStatus(ElevatorProps.Status.IDLE)
-        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
+        if (status == ElevatorProps.Status.POWER_OFF) {
+            delay(2500)
+            setStatus(ElevatorProps.Status.POWER_ON)
+            elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_ON)
+            delay(500)
+            setStatus(ElevatorProps.Status.IDLE)
+            elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
+        }
+    }
+
+    override fun powerOff() {
+        if (status != ElevatorProps.Status.IDLE) {
+            throw ElevatorNotIdleException("Elevator status is not IDLE. Elevator can only be powered off when IDLE.")
+        }
+        setStatus(ElevatorProps.Status.POWER_OFF)
+        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_OFF)
     }
 
     override fun status(): ElevatorProps.Status {
