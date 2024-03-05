@@ -63,18 +63,12 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
                         Toast
                             .makeText(context, "Powering on...", Toast.LENGTH_SHORT)
                             .show()
+                        elevatorViewModel.powerOn()
+                    } else {
+                        elevatorViewModel.powerOff()
                     }
-                    elevatorViewModel.powerOn()
                 }
         )
-    }
-
-    LaunchedEffect(key1 = elevatorStatus) {
-        if (elevatorStatus == ElevatorProps.Status.POWER_ON) {
-            Toast
-                .makeText(context, "Powered on!", Toast.LENGTH_SHORT)
-                .show()
-        }
     }
 
     Column(

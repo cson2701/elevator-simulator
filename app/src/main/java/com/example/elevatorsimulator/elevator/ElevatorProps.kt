@@ -15,7 +15,9 @@ class ElevatorProps {
         MOVING_DOWN,
         IDLE,
         DOOR_OPENING,
+        DOOR_OPEN,
         DOOR_CLOSING,
+        DOOR_CLOSED,
         POWER_OFF,
         POWER_ON,
     }

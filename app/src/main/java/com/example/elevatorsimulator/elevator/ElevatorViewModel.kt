@@ -51,6 +51,12 @@ class ElevatorViewModel : ViewModel() {
         }
     }
 
+    fun powerOff() {
+        if (elevator.status() == ElevatorProps.Status.IDLE) {
+            elevator.powerOff()
+        }
+    }
+
     fun move(targetFloor: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             _isTargetReached.postValue(false)
