@@ -9,15 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    
+    - name: Set up environment variables
+      run: |
+        echo "GITHUB_TO_SLACK_MAPPING='cson2701:U03L252MT0T'" >> $GITHUB_ENV
+
+    - name: Extract GitHub username
+      id: extract_username
+      run: echo "::set-output name=username::${{ github.event.pull_request.user.login }}"
+
+    - name: Find Slack user ID
+      id: find_slack_user
+      run: echo "::set-output name=slack_id::$(echo $GITHUB_TO_SLACK_MAPPING | grep -oP "${{ github.event.pull_request.user.login }}:\K[^,]+")"
+
     - name: Post to a Slack channel
       id: slack
       uses: slackapi/slack-github-action@v1.25.0
       with:
-        # Slack channel id, channel name, or user id to post message.
-        # See also: https://api.slack.com/methods/chat.postMessage#channels
-        # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
         channel-id: 'C03KMJQ53EK'
-        # For posting a simple plain text message
-        slack-message: "A pull request has been opened by *${{ github.event.pull_request.user.login }}* <@U03L252MT0T>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+        slack-message: "A pull request has been opened by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
