@@ -12,7 +12,7 @@ jobs:
     
     - name: Set up environment variables
       run: |
-        echo "GITHUB_TO_SLACK_MAPPING=cson2701:U03L252MT0T" >> $GITHUB_ENV
+        echo "GITHUB_TO_SLACK_MAPPING='cson2701:U03L252MT0T,'" >> $GITHUB_ENV
 
     - name: Extract GitHub username
       id: extract_username
