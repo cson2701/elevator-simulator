@@ -27,6 +27,6 @@ jobs:
       uses: slackapi/slack-github-action@v1.25.0
       with:
         channel-id: 'C03KMJQ53EK'
-        slack-message: "A pull request has been opened by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+        slack-message: "New PR to review by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
