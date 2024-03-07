@@ -49,7 +49,7 @@ fun PowerIcon(
                     )
                 },
             painter = painterResource(id = R.drawable.ic_power),
-            contentDescription = "Power",
+            contentDescription = "Power button",
             tint = colorResource(id = R.color.white) // Replace with your actual green color resource
         )
     }
