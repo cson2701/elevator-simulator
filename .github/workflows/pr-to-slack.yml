@@ -18,6 +18,6 @@ jobs:
         # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
         channel-id: 'C03KMJQ53EK'
         # For posting a simple plain text message
-        slack-message: "A pull request has been opened by *${{ github.event.pull_request.user.login }}*:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+        slack-message: "A pull request has been opened by *${{ github.event.pull_request.user.login }}* <@U03L252MT0T>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
