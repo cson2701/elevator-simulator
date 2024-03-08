@@ -22,11 +22,13 @@ jobs:
         id: find_slack_user
         run: echo "slack_id=$(echo $GITHUB_TO_SLACK_MAPPING | grep -oP "${{ github.event.pull_request.user.login }}:\K[^,]+")" >> $GITHUB_OUTPUT
 
-      - name: Post to a Slack channel
+      - name: Send message to Slack
         id: slack
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: archive/github-actions-slack@v2.0.0
         with:
-          channel-id: 'C03KMJQ53EK'
-          slack-message: "New pull request to review by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: C03KMJQ53EK
+          slack-text: New pull request to review by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+
+      - name: Result from "Send Message"
+        run: echo "The result was ${{ steps.slack.outputs.slack-result }}"
