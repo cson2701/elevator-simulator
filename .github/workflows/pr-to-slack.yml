@@ -1,34 +1,30 @@
-name: Slack Pull Request Open Notification
+name: Notify Slack on PR
 
 on:
   pull_request:
-    branches:
-      - main
+    types:
+      - opened
+      - closed
 
 jobs:
-  build:
+  notify-slack:
     runs-on: ubuntu-latest
+
     steps:
-
-      - name: Set up environment variables
-        run: |
-          echo "GITHUB_TO_SLACK_MAPPING=cson2701:U03L252MT0T" >> $GITHUB_ENV
-
-      - name: Extract GitHub username
-        id: extract_username
-        run: echo "username=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
-
-      - name: Find Slack user ID
-        id: find_slack_user
-        run: echo "slack_id=$(echo $GITHUB_TO_SLACK_MAPPING | grep -oP "${{ github.event.pull_request.user.login }}:\K[^,]+")" >> $GITHUB_OUTPUT
-
-      - name: Send message to Slack
-        id: slack
-        uses: archive/github-actions-slack@v2.0.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          slack-channel: C03KMJQ53EK
-          slack-text: New pull request to review by *${{ github.event.pull_request.user.login }}* <@${{ steps.find_slack_user.outputs.slack_id }}>:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+          node-version: '14'
 
-      - name: Result from "Send Message"
-        run: echo "The result was ${{ steps.slack.outputs.slack-result }}"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install @slack/web-api
+
+      - name: Send Slack Message
+        id: send-slack-message
+        run: node .github/workflows/sendSlackMessage.js
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        continue-on-error: true
