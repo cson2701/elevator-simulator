@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,10 +15,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.elevatorsimulator.R
+import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.uicomponents.NumberInput
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfigView() {
     var lowestFloorInput by remember { mutableStateOf("") }
@@ -36,7 +38,7 @@ fun ConfigView() {
         ) {
             Column {
                 NumberInputRow(
-                    label = "Set highest floor",
+                    label = stringResource(R.string.set_highest_floor),
                     value = highestFloorInput,
                     onValueChange = {
                         if (it.isBlank()) {
@@ -47,7 +49,7 @@ fun ConfigView() {
                     },
                 )
                 NumberInputRow(
-                    label = "Set lowest floor",
+                    label = stringResource(R.string.set_lowest_floor),
                     value = lowestFloorInput,
                     onValueChange = {
                         if (it.isBlank()) {
@@ -59,13 +61,14 @@ fun ConfigView() {
                 )
             }
         }
+        val context = LocalContext.current
         Button(
             modifier = Modifier
                 .wrapContentSize()
                 .padding(16.dp)
                 .align(Alignment.BottomEnd),
-            onClick = { /*TODO*/ }) {
-            Text(text = "Save")
+            onClick = { ElevatorConfig(context).save(lowestFloorInput.toInt(), highestFloorInput.toInt()) }) {
+            Text(text = stringResource(R.string.save))
         }
     }
 }

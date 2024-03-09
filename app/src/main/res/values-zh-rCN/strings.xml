@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="save">保存</string>
+    <string name="app_name">电梯模拟器</string>
+    <string name="set_highest_floor">设置最高楼层</string>
+    <string name="set_lowest_floor">设置最低楼层</string>
+</resources>
