@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator.config.views
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,7 +68,10 @@ fun ConfigView() {
                 .wrapContentSize()
                 .padding(16.dp)
                 .align(Alignment.BottomEnd),
-            onClick = { ElevatorConfig(context).save(lowestFloorInput.toInt(), highestFloorInput.toInt()) }) {
+            onClick = {
+                ElevatorConfig(context).save(lowestFloorInput.toInt(), highestFloorInput.toInt())
+                (context as ComponentActivity).finish()
+            }) {
             Text(text = stringResource(R.string.save))
         }
     }
