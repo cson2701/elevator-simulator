@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">ElevatorSimulator</string>
-    <string name="title_activity_config">ConfigActivity</string>
+    <string name="title_activity_config" translatable="false">ConfigActivity</string>
+    <string name="save">Save</string>
+    <string name="set_highest_floor">Set highest floor</string>
+    <string name="set_lowest_floor">Set lowest floor</string>
+    <string name="target_floor">Target floor</string>
 </resources>
