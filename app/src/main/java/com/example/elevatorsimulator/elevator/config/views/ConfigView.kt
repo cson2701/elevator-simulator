@@ -29,6 +29,11 @@ fun ConfigView() {
     var highestFloorInput by remember { mutableStateOf("") }
     var speedInput by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+    val elevatorConfig = ElevatorConfig(context)
+    val savedHighestFloor = elevatorConfig.getHighestFloor()
+    val savedLowestFloor = elevatorConfig.getLowestFloor()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -40,6 +45,7 @@ fun ConfigView() {
             Column {
                 NumberInputRow(
                     label = stringResource(R.string.set_highest_floor),
+                    placeholder = savedHighestFloor.toString(),
                     value = highestFloorInput,
                     onValueChange = {
                         if (it.isBlank()) {
@@ -51,6 +57,7 @@ fun ConfigView() {
                 )
                 NumberInputRow(
                     label = stringResource(R.string.set_lowest_floor),
+                    placeholder = savedLowestFloor.toString(),
                     value = lowestFloorInput,
                     onValueChange = {
                         if (it.isBlank()) {
@@ -62,14 +69,16 @@ fun ConfigView() {
                 )
             }
         }
-        val context = LocalContext.current
         Button(
             modifier = Modifier
                 .wrapContentSize()
                 .padding(16.dp)
                 .align(Alignment.BottomEnd),
             onClick = {
-                ElevatorConfig(context).save(lowestFloorInput.toInt(), highestFloorInput.toInt())
+                elevatorConfig.save(
+                    lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor ?: 0,
+                    highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor ?: 0
+                )
                 (context as ComponentActivity).finish()
             }) {
             Text(text = stringResource(R.string.save))
@@ -78,7 +87,7 @@ fun ConfigView() {
 }
 
 @Composable
-fun NumberInputRow(label: String, value: String, onValueChange: (String) -> Unit) {
+fun NumberInputRow(label: String, placeholder: String, value: String, onValueChange: (String) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -87,6 +96,7 @@ fun NumberInputRow(label: String, value: String, onValueChange: (String) -> Unit
             text = label,
         )
         NumberInput(
+            placeholder = placeholder,
             value = value,
             onValueChange = onValueChange,
         )
