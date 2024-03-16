@@ -4,7 +4,7 @@ import android.content.Context
 import com.example.elevatorsimulator.utils.TinyDbSingleton
 
 class ElevatorConfig(context: Context) {
-    private val tinyDB = TinyDbSingleton().getInstance(context)
+    private val tinyDB = TinyDbSingleton.getInstance()
 
     private fun saveLowestFloor(lowestFloor: Int) {
         tinyDB?.putInt("lowestFloor", lowestFloor)

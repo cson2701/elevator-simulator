@@ -17,6 +17,9 @@ class ElevatorViewModel : ViewModel() {
         val SPEED = ElevatorProps.Speed.SPEED_1.value
     }
 
+//    private val elevatorConfig = Ele
+//    private val savedHighestFloor =
+//
     private val _currentFloor = MutableLiveData(CURRENT_FLOOR)
     val currentFloor: LiveData<Int> = _currentFloor
 

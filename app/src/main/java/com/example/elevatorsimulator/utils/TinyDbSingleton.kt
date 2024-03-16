@@ -3,12 +3,19 @@ package com.example.elevatorsimulator.utils
 import android.content.Context
 
 class TinyDbSingleton {
-    private var tinyDB: TinyDB? = null
+    companion object {
+        private var tinyDB: TinyDB? = null
 
-    fun getInstance(context: Context): TinyDB? {
-        if (tinyDB == null) {
-            tinyDB = TinyDB((context.applicationContext))
+        fun getInstance(): TinyDB? {
+            if (tinyDB != null) {
+                return tinyDB
+            } else {
+                throw UninitializedPropertyAccessException("TinyDB is not initialized")
+            }
         }
-        return tinyDB
+
+        fun init(context: Context) {
+            tinyDB = TinyDB(context.applicationContext)
+        }
     }
 }
