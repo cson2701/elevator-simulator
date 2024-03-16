@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator.config.views
 
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,22 +70,29 @@ fun ConfigView() {
                 )
             }
         }
+        val onSaveClick: () -> Unit = {
+            val lowestFloor = lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor
+            val highestFloor = highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
+            if (lowestFloor < highestFloor) {
+                if (elevatorConfig.save(lowestFloor, highestFloor)) {
+                    (context as ComponentActivity).finish()
+                }
+            } else {
+                Toast.makeText(context, "Lowest floor must be lower than highest floor", Toast.LENGTH_LONG).show()
+            }
+        }
         Button(
             modifier = Modifier
                 .wrapContentSize()
                 .padding(16.dp)
                 .align(Alignment.BottomEnd),
-            onClick = {
-                elevatorConfig.save(
-                    lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor,
-                    highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
-                )
-                (context as ComponentActivity).finish()
-            }) {
+            onClick = { onSaveClick() }
+        ) {
             Text(text = stringResource(R.string.save))
         }
     }
 }
+
 
 @Composable
 fun NumberInputRow(label: String, placeholder: String, value: String, onValueChange: (String) -> Unit) {

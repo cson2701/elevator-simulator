@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator.config
 
+import com.example.elevatorsimulator.elevator.exceptions.IllegalFloorException
 import com.example.elevatorsimulator.utils.TinyDbSingleton
 
 class ElevatorConfig {
@@ -21,9 +22,14 @@ class ElevatorConfig {
         return tinyDB?.getInt("highestFloor") ?: 2
     }
 
-    fun save(lowestFloor: Int, highestFloor: Int) {
-        // TODO: Check valid lowest and highest
-        saveLowestFloor(lowestFloor)
-        saveHighestFloor(highestFloor)
+    @Throws(IllegalFloorException::class)
+    fun save(lowestFloor: Int, highestFloor: Int): Boolean {
+        if (lowestFloor < highestFloor) {
+            saveLowestFloor(lowestFloor)
+            saveHighestFloor(highestFloor)
+            return true
+        } else {
+            throw IllegalFloorException("Lowest floor must lower than highest floor.")
+        }
     }
 }
