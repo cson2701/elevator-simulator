@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -11,15 +12,10 @@ import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
     companion object {
-        const val LOWEST_FLOOR = 1
-        const val HIGHEST_FLOOR = 10
         const val CURRENT_FLOOR = 7
         val SPEED = ElevatorProps.Speed.SPEED_1.value
     }
 
-//    private val elevatorConfig = Ele
-//    private val savedHighestFloor =
-//
     private val _currentFloor = MutableLiveData(CURRENT_FLOOR)
     val currentFloor: LiveData<Int> = _currentFloor
 
@@ -30,6 +26,7 @@ class ElevatorViewModel : ViewModel() {
     val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
 
 
+    private val elevatorConfig = ElevatorConfig()
     private val elevator: Elevator = ElevatorBuilder(object : ElevatorListener {
         override fun onFloorChangeListener(currentFloor: Int) {
             println("currentFloor = $currentFloor")
@@ -41,8 +38,8 @@ class ElevatorViewModel : ViewModel() {
             _elevatorStatus.postValue(status)
         }
     })
-        .setLowestFloor(LOWEST_FLOOR)
-        .setHighestFloor(HIGHEST_FLOOR)
+        .setLowestFloor(elevatorConfig.getLowestFloor())
+        .setHighestFloor(elevatorConfig.getHighestFloor())
         .setCurrentFloor(CURRENT_FLOOR)
         .setSpeed(SPEED)
         .setNumberOfElevators(1)
