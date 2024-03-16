@@ -27,6 +27,9 @@ class ElevatorViewModel : ViewModel() {
 
 
     private val elevatorConfig = ElevatorConfig()
+
+    // TODO: Build Elevator when power on
+
     private val elevator: Elevator = ElevatorBuilder(object : ElevatorListener {
         override fun onFloorChangeListener(currentFloor: Int) {
             println("currentFloor = $currentFloor")
