@@ -30,7 +30,7 @@ fun ConfigView() {
     var speedInput by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val elevatorConfig = ElevatorConfig(context)
+    val elevatorConfig = ElevatorConfig()
     val savedHighestFloor = elevatorConfig.getHighestFloor()
     val savedLowestFloor = elevatorConfig.getLowestFloor()
 
@@ -76,8 +76,8 @@ fun ConfigView() {
                 .align(Alignment.BottomEnd),
             onClick = {
                 elevatorConfig.save(
-                    lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor ?: 0,
-                    highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor ?: 0
+                    lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor,
+                    highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
                 )
                 (context as ComponentActivity).finish()
             }) {
