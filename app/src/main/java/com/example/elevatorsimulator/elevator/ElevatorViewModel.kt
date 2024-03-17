@@ -11,12 +11,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
-    companion object {
-        const val CURRENT_FLOOR = 7
-        val SPEED = ElevatorProps.Speed.SPEED_1.value
-    }
+    private val elevatorConfig = ElevatorConfig()
+    private val initCurrentFloor = randomizeInitCurrentFloor()
 
-    private val _currentFloor = MutableLiveData(CURRENT_FLOOR)
+    private val _currentFloor = MutableLiveData(initCurrentFloor)
     val currentFloor: LiveData<Int> = _currentFloor
 
     private val _isTargetReached = MutableLiveData(false)
@@ -25,8 +23,11 @@ class ElevatorViewModel : ViewModel() {
     private val _elevatorStatus = MutableLiveData(ElevatorProps.Status.POWER_OFF)
     val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
 
-
-    private val elevatorConfig = ElevatorConfig()
+    private fun randomizeInitCurrentFloor(): Int {
+        val lowestFloor = elevatorConfig.getLowestFloor()
+        val highestFloor = elevatorConfig.getHighestFloor()
+        return (lowestFloor..highestFloor).random()
+    }
 
     // TODO: Build Elevator when power on
 
@@ -43,7 +44,7 @@ class ElevatorViewModel : ViewModel() {
     })
         .setLowestFloor(elevatorConfig.getLowestFloor())
         .setHighestFloor(elevatorConfig.getHighestFloor())
-        .setCurrentFloor(CURRENT_FLOOR)
+        .setCurrentFloor(initCurrentFloor)
         .setSpeed(SPEED)
         .setNumberOfElevators(1)
         .build()
@@ -71,5 +72,9 @@ class ElevatorViewModel : ViewModel() {
                 System.err.println("Disable UI before powering on the elevator")
             }
         }
+    }
+
+    companion object {
+        private val SPEED = ElevatorProps.Speed.SPEED_1.value
     }
 }

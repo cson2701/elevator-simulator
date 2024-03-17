@@ -19,16 +19,16 @@
  */
 package com.example.elevatorsimulator.utils
 
+//import com.google.gson.Gson
 import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
 import android.graphics.BitmapFactory
 import android.os.Environment
+import android.preference.PreferenceManager
 import android.text.TextUtils
 import android.util.Log
-import androidx.preference.PreferenceManager
-//import com.google.gson.Gson
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -159,6 +159,17 @@ class TinyDB(private val context: Context) {
     }
 
     /**
+     * Get int value from SharedPreferences at [key].
+     * If key not found, return default value provided.
+     *
+     * @param key SharedPreferences key
+     * @param default default value if key not found
+     * @return int value at [key] or [default] if key not found
+     */
+    fun getInt(key: String, default: Int) =
+        if (preferences.getInt(key, 0) == 0) default else preferences.getInt(key, 0)
+
+    /**
      * Get parsed ArrayList of Integers from SharedPreferences at 'key'
      *
      * @param key SharedPreferences key
@@ -284,24 +295,24 @@ class TinyDB(private val context: Context) {
         return newList
     }
 
-/*
-    fun getListObject(key: String?, mClass: Class<*>?): ArrayList<Any> {
-        val gson = Gson()
-        val objStrings = getListString(key)
-        val objects = ArrayList<Any>()
-        for (jObjString in objStrings) {
-            val value = gson.fromJson(jObjString, mClass)
-            objects.add(value)
+    /*
+        fun getListObject(key: String?, mClass: Class<*>?): ArrayList<Any> {
+            val gson = Gson()
+            val objStrings = getListString(key)
+            val objects = ArrayList<Any>()
+            for (jObjString in objStrings) {
+                val value = gson.fromJson(jObjString, mClass)
+                objects.add(value)
+            }
+            return objects
         }
-        return objects
-    }
 
-    fun <T> getObject(key: String?, classOfT: Class<T>?): T {
-        val json = getString(key)
-        return Gson().fromJson(json, classOfT)
-            ?: throw java.lang.NullPointerException()
-    }
-*/
+        fun <T> getObject(key: String?, classOfT: Class<T>?): T {
+            val json = getString(key)
+            return Gson().fromJson(json, classOfT)
+                ?: throw java.lang.NullPointerException()
+        }
+    */
 
     // Put methods
     /**
@@ -438,9 +449,7 @@ class TinyDB(private val context: Context) {
         putListString(key, newList)
     }
 
-/*
-    */
-/**
+    /*
      * Put Object any type into SharedPreferences with 'key' and save
      * @param key SharedPreferences key
      * @param obj is the Object you want to put
@@ -505,7 +514,7 @@ class TinyDB(private val context: Context) {
      * @param listener listener object of OnSharedPreferenceChangeListener
      */
     fun registerOnSharedPreferenceChangeListener(
-        listener: OnSharedPreferenceChangeListener?
+        listener: OnSharedPreferenceChangeListener?,
     ) {
         preferences.registerOnSharedPreferenceChangeListener(listener)
     }
@@ -516,7 +525,7 @@ class TinyDB(private val context: Context) {
      * @param listener listener object of OnSharedPreferenceChangeListener to be unregistered
      */
     fun unregisterOnSharedPreferenceChangeListener(
-        listener: OnSharedPreferenceChangeListener?
+        listener: OnSharedPreferenceChangeListener?,
     ) {
         preferences.unregisterOnSharedPreferenceChangeListener(listener)
     }

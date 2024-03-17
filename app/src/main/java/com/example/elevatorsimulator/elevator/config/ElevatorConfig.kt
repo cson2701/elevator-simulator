@@ -11,7 +11,7 @@ class ElevatorConfig {
     }
 
     fun getLowestFloor(): Int {
-        return tinyDB?.getInt("lowestFloor") ?: 1
+        return tinyDB?.getInt("lowestFloor", 1) ?: 1
     }
 
     private fun saveHighestFloor(highestFloor: Int) {
@@ -19,7 +19,7 @@ class ElevatorConfig {
     }
 
     fun getHighestFloor(): Int {
-        return tinyDB?.getInt("highestFloor") ?: 2
+        return tinyDB?.getInt("highestFloor", 2) ?: 2
     }
 
     @Throws(IllegalFloorException::class)
