@@ -84,24 +84,34 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = when (elevatorStatus) {
-                ElevatorProps.Status.MOVING_UP -> {
-                    "◭"
-                }
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-                ElevatorProps.Status.MOVING_DOWN -> {
-                    "⧩"
-                }
+            Text(
+                text = when (elevatorStatus) {
+                    ElevatorProps.Status.MOVING_UP -> {
+                        "◭"
+                    }
 
-                else -> {
-                    ""
-                }
-            },
-        )
-        Text(
-            text = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) "--" else currentFloor.toString(),
-        )
+                    ElevatorProps.Status.MOVING_DOWN -> {
+                        "⧩"
+                    }
+
+                    else -> {
+                        ""
+                    }
+                },
+            )
+            Text(
+                text = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) "--" else currentFloor.toString(),
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "H:${elevatorViewModel.getHighestFloor()}\nL:${elevatorViewModel.getLowestFloor()}",
+            )
+        }
 
         var ding by remember {
             mutableStateOf("")
