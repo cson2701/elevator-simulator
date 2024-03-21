@@ -47,6 +47,7 @@ class Elevator(
             delay(500)
             setStatus(ElevatorProps.Status.IDLE)
             elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
+
         }
     }
 
