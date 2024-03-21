@@ -29,38 +29,42 @@ class ElevatorViewModel : ViewModel() {
         return (lowestFloor..highestFloor).random()
     }
 
-    // TODO: Build Elevator when power on
-
     fun getLowestFloor() = elevatorConfig.getLowestFloor()
     fun getHighestFloor() = elevatorConfig.getHighestFloor()
 
-    private val elevator: Elevator = ElevatorBuilder(object : ElevatorListener {
-        override fun onFloorChangeListener(currentFloor: Int) {
-            println("currentFloor = $currentFloor")
-            _currentFloor.postValue(currentFloor)
-        }
 
-        override fun onStatusChangeListener(status: ElevatorProps.Status) {
-            println("status = $status")
-            _elevatorStatus.postValue(status)
-        }
-    })
-        .setLowestFloor(elevatorConfig.getLowestFloor())
-        .setHighestFloor(elevatorConfig.getHighestFloor())
-        .setCurrentFloor(initCurrentFloor)
-        .setSpeed(SPEED)
-        .setNumberOfElevators(1)
-        .build()
+    private var elevator : Elevator? = null
 
     fun powerOn() {
         viewModelScope.launch(Dispatchers.IO) {
-            elevator.powerOn()
+            buildElevator()
+            elevator?.powerOn()
         }
     }
 
+    private fun buildElevator() {
+        elevator = ElevatorBuilder(object : ElevatorListener {
+            override fun onFloorChangeListener(currentFloor: Int) {
+                println("currentFloor = $currentFloor")
+                _currentFloor.postValue(currentFloor)
+            }
+
+            override fun onStatusChangeListener(status: ElevatorProps.Status) {
+                println("status = $status")
+                _elevatorStatus.postValue(status)
+            }
+        })
+            .setLowestFloor(elevatorConfig.getLowestFloor())
+            .setHighestFloor(elevatorConfig.getHighestFloor())
+            .setCurrentFloor(initCurrentFloor)
+            .setSpeed(SPEED)
+            .setNumberOfElevators(1)
+            .build()
+    }
+
     fun powerOff() {
-        if (elevator.status() == ElevatorProps.Status.IDLE) {
-            elevator.powerOff()
+        if (elevator?.status() == ElevatorProps.Status.IDLE) {
+            elevator?.powerOff()
         }
     }
 
@@ -69,7 +73,7 @@ class ElevatorViewModel : ViewModel() {
             _isTargetReached.postValue(false)
             delay(100) // added a delay to let the view have time to react to previous false
             try {
-                _isTargetReached.postValue(elevator.move(targetFloor))
+                _isTargetReached.postValue(elevator?.move(targetFloor))
             } catch (e: ElevatorNotPoweredOnException) {
                 e.printStackTrace()
                 System.err.println("Disable UI before powering on the elevator")
