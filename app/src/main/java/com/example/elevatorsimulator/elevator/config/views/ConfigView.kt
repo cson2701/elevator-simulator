@@ -1,7 +1,7 @@
 package com.example.elevatorsimulator.elevator.config.views
 
+import android.content.Intent
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,9 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.elevatorsimulator.MainActivity
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.uicomponents.NumberInput
+
 
 @Composable
 fun ConfigView() {
@@ -71,14 +73,28 @@ fun ConfigView() {
             }
         }
         val onSaveClick: () -> Unit = {
-            val lowestFloor = lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor
-            val highestFloor = highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
+            val lowestFloor =
+                lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor
+            val highestFloor =
+                highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
             if (lowestFloor < highestFloor) {
                 if (elevatorConfig.save(lowestFloor, highestFloor)) {
-                    (context as ComponentActivity).finish()
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    context.startActivity(intent)
                 }
+            } else if (lowestFloor == 0 || highestFloor == 0){
+                Toast.makeText(
+                    context,
+                    "Please set lowest and highest floor",
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
-                Toast.makeText(context, "Lowest floor must be lower than highest floor", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Lowest floor must be lower than highest floor",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
         Button(
@@ -95,7 +111,12 @@ fun ConfigView() {
 
 
 @Composable
-fun NumberInputRow(label: String, placeholder: String, value: String, onValueChange: (String) -> Unit) {
+fun NumberInputRow(
+    label: String,
+    placeholder: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
