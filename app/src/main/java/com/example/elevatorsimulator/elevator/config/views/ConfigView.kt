@@ -77,18 +77,18 @@ fun ConfigView() {
                 lowestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedLowestFloor
             val highestFloor =
                 highestFloorInput.takeIf { it.isNotBlank() }?.toInt() ?: savedHighestFloor
-            if (lowestFloor < highestFloor) {
-                if (elevatorConfig.save(lowestFloor, highestFloor)) {
-                    val intent = Intent(context, MainActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    context.startActivity(intent)
-                }
-            } else if (lowestFloor == 0 || highestFloor == 0){
+            if (lowestFloor == 0 || highestFloor == 0) {
                 Toast.makeText(
                     context,
                     "Please set lowest and highest floor",
                     Toast.LENGTH_LONG
                 ).show()
+            } else if (lowestFloor < highestFloor) {
+                if (elevatorConfig.save(lowestFloor, highestFloor)) {
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    context.startActivity(intent)
+                }
             } else {
                 Toast.makeText(
                     context,
