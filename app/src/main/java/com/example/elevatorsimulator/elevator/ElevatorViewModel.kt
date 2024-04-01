@@ -33,7 +33,7 @@ class ElevatorViewModel : ViewModel() {
     fun getHighestFloor() = elevatorConfig.getHighestFloor()
 
 
-    private var elevator : Elevator? = null
+    private var elevator: Elevator? = null
 
     fun powerOn() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -73,7 +73,9 @@ class ElevatorViewModel : ViewModel() {
             _isTargetReached.postValue(false)
             delay(100) // added a delay to let the view have time to react to previous false
             try {
-                _isTargetReached.postValue(elevator?.move(targetFloor))
+                elevator?.move(targetFloor) {
+                    _isTargetReached.postValue(it)
+                }
             } catch (e: ElevatorNotPoweredOnException) {
                 e.printStackTrace()
                 System.err.println("Disable UI before powering on the elevator")

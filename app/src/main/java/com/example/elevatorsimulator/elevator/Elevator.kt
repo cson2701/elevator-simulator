@@ -15,7 +15,10 @@ class Elevator(
     private var status: ElevatorProps.Status = ElevatorProps.Status.POWER_OFF
 
     @Throws(ElevatorNotPoweredOnException::class)
-    override suspend fun move(targetFloor: Int): Boolean {
+    override suspend fun move(
+        targetFloor: Int,
+        onTargetFloorReached: (isTargetFloorReached: Boolean) -> Unit,
+    ): Boolean {
         if (status == ElevatorProps.Status.POWER_OFF) {
             throw ElevatorNotPoweredOnException("Elevator status is POWER_OFF. Call powerOn() before starting any operations.")
         }
@@ -29,13 +32,12 @@ class Elevator(
                 ElevatorProps.Status.MOVING_DOWN
             }
             setStatus(direction)
-            elevatorListener.onStatusChangeListener(direction)
             delay(speed)
             currentFloor += if (currentFloor < targetFloor) 1 else -1
             elevatorListener.onFloorChangeListener(currentFloor)
         }
         setStatus(ElevatorProps.Status.IDLE)
-        elevatorListener.onStatusChangeListener(ElevatorProps.Status.IDLE)
+        onTargetFloorReached(true)
         return true
     }
 
@@ -43,10 +45,8 @@ class Elevator(
         if (status == ElevatorProps.Status.POWER_OFF) {
             delay(2500)
             setStatus(ElevatorProps.Status.POWER_ON)
-            elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_ON)
             delay(500)
             setStatus(ElevatorProps.Status.IDLE)
-            elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.IDLE)
 
         }
     }
@@ -56,7 +56,6 @@ class Elevator(
             throw ElevatorNotIdleException("Elevator status is not IDLE. Elevator can only be powered off when IDLE.")
         }
         setStatus(ElevatorProps.Status.POWER_OFF)
-        elevatorListener.onStatusChangeListener(status = ElevatorProps.Status.POWER_OFF)
     }
 
     override fun status(): ElevatorProps.Status {
@@ -65,6 +64,7 @@ class Elevator(
 
     private fun setStatus(status: ElevatorProps.Status) {
         this.status = status
+        elevatorListener.onStatusChangeListener(status = status)
     }
 
     private fun isTargetFloorReached(targetFloor: Int, currentFloor: Int) =
