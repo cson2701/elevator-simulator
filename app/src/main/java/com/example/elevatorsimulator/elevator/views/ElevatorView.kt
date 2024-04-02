@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.ElevatorViewModel
@@ -84,29 +85,29 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        Text(
+            text = when (elevatorStatus) {
+                ElevatorProps.Status.MOVING_UP -> {
+                    "⬆︎"
+//                    "◭"
+                }
+
+                ElevatorProps.Status.MOVING_DOWN -> {
+                    "⬇︎"
+//                    "⧩"
+                }
+
+                else -> {
+                    ""
+                }
+            },
+        )
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Text(
-                text = when (elevatorStatus) {
-                    ElevatorProps.Status.MOVING_UP -> {
-                        "◭"
-                    }
-
-                    ElevatorProps.Status.MOVING_DOWN -> {
-                        "⧩"
-                    }
-
-                    else -> {
-                        ""
-                    }
-                },
-            )
             Text(
                 text = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) "--" else currentFloor.toString(),
             )
-
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "H:${elevatorViewModel.getHighestFloor()}\nL:${elevatorViewModel.getLowestFloor()}",
@@ -128,6 +129,32 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
         Text(
             text = ding,
         )
+
+        var doorStatus by remember {
+            mutableStateOf("")
+        }
+        LaunchedEffect(elevatorStatus) {
+            doorStatus = when (elevatorStatus) {
+                ElevatorProps.Status.DOOR_OPENING ->
+                    "Door opening..."
+
+                ElevatorProps.Status.DOOR_OPEN ->
+                    "Door open"
+
+                ElevatorProps.Status.DOOR_CLOSING ->
+                    "Door closing..."
+
+                else -> {
+                    ""
+                }
+            }
+        }
+        Spacer(modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            text = doorStatus,
+            fontSize = 20.sp
+        )
+
         Spacer(modifier = Modifier.weight(1f))
         Row(
             verticalAlignment = Alignment.CenterVertically

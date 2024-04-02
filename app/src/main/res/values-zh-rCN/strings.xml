@@ -4,4 +4,5 @@
     <string name="app_name">电梯模拟器</string>
     <string name="set_highest_floor">设置最高楼层</string>
     <string name="set_lowest_floor">设置最低楼层</string>
+    <string name="target_floor">目的楼层</string>
 </resources>
