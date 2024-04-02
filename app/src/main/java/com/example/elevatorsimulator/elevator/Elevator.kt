@@ -2,7 +2,10 @@ package com.example.elevatorsimulator.elevator
 
 import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotIdleException
 import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class Elevator(
     private val lowestFloor: Int,
@@ -38,7 +41,34 @@ class Elevator(
         }
         setStatus(ElevatorProps.Status.IDLE)
         onTargetFloorReached(true)
+        openDoor()
         return true
+    }
+
+    override suspend fun openDoor() {
+        if (status == ElevatorProps.Status.IDLE || status == ElevatorProps.Status.DOOR_CLOSING) {
+            setStatus(ElevatorProps.Status.DOOR_OPENING)
+            val doorOpeningJob = CoroutineScope(Dispatchers.Main).launch {
+                delay(1000)
+                setStatus(ElevatorProps.Status.DOOR_OPEN)
+                delay(1500)
+                closeDoor()
+            }
+            // TODO: Make door close interrupt-able
+            // Check if the coroutine has been cancelled before proceeding further.
+//            if (isActive) {
+//                // Wait for the door opening process to complete.
+//                doorOpeningJob.join()
+//            }
+        }
+    }
+
+    override suspend fun closeDoor() {
+        if (status == ElevatorProps.Status.DOOR_OPEN) {
+            setStatus(ElevatorProps.Status.DOOR_CLOSING)
+            delay(1000)
+            setStatus(ElevatorProps.Status.IDLE)
+        }
     }
 
     override suspend fun powerOn() {

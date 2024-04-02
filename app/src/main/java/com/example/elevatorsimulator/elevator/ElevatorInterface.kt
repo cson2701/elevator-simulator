@@ -6,6 +6,10 @@ interface ElevatorInterface {
         onTargetFloorReached: (isTargetFloorReached: Boolean) -> Unit,
     ): Boolean
 
+    suspend fun openDoor()
+
+    suspend fun closeDoor()
+
     fun status(): ElevatorProps.Status
 
     suspend fun powerOn()
