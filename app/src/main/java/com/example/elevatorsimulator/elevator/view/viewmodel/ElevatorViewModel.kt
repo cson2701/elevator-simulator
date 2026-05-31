@@ -1,27 +1,31 @@
-package com.example.elevatorsimulator.elevator
+package com.example.elevatorsimulator.elevator.view.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.elevatorsimulator.elevator.Elevator
+import com.example.elevatorsimulator.elevator.ElevatorBuilder
+import com.example.elevatorsimulator.elevator.ElevatorListener
+import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
-    private val elevatorConfig = ElevatorConfig()
+    private val elevatorConfig = ElevatorConfig
     private val initCurrentFloor = randomizeInitCurrentFloor()
 
-    private val _currentFloor = MutableLiveData(initCurrentFloor)
-    val currentFloor: LiveData<Int> = _currentFloor
+    private val _currentFloor = MutableStateFlow(initCurrentFloor)
+    val currentFloor: StateFlow<Int> = _currentFloor
 
-    private val _isTargetReached = MutableLiveData(false)
-    val isTargetFloorReached: LiveData<Boolean> = _isTargetReached
+    private val _isTargetReached = MutableStateFlow(false)
+    val isTargetFloorReached: StateFlow<Boolean> = _isTargetReached
 
-    private val _elevatorStatus = MutableLiveData(ElevatorProps.Status.POWER_OFF)
-    val elevatorStatus: LiveData<ElevatorProps.Status> = _elevatorStatus
+    private val _elevatorStatus = MutableStateFlow(ElevatorProps.Status.POWER_OFF)
+    val elevatorStatus: StateFlow<ElevatorProps.Status> = _elevatorStatus
 
     private fun randomizeInitCurrentFloor(): Int {
         val lowestFloor = elevatorConfig.getLowestFloor()
@@ -31,7 +35,6 @@ class ElevatorViewModel : ViewModel() {
 
     fun getLowestFloor() = elevatorConfig.getLowestFloor()
     fun getHighestFloor() = elevatorConfig.getHighestFloor()
-
 
     private var elevator: Elevator? = null
 
@@ -46,12 +49,12 @@ class ElevatorViewModel : ViewModel() {
         elevator = ElevatorBuilder(object : ElevatorListener {
             override fun onFloorChangeListener(currentFloor: Int) {
                 println("currentFloor = $currentFloor")
-                _currentFloor.postValue(currentFloor)
+                _currentFloor.value = currentFloor
             }
 
             override fun onStatusChangeListener(status: ElevatorProps.Status) {
                 println("status = $status")
-                _elevatorStatus.postValue(status)
+                _elevatorStatus.value = status
             }
         })
             .setLowestFloor(elevatorConfig.getLowestFloor())
@@ -70,11 +73,11 @@ class ElevatorViewModel : ViewModel() {
 
     fun move(targetFloor: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            _isTargetReached.postValue(false)
+            _isTargetReached.value = false
             delay(100) // added a delay to let the view have time to react to previous false
             try {
                 elevator?.move(targetFloor) {
-                    _isTargetReached.postValue(it)
+                    _isTargetReached.value = it
                 }
             } catch (e: ElevatorNotPoweredOnException) {
                 e.printStackTrace()

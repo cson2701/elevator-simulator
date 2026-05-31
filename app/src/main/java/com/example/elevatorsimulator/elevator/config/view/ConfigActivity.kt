@@ -1,4 +1,4 @@
-package com.example.elevatorsimulator.elevator.config
+package com.example.elevatorsimulator.elevator.config.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.elevatorsimulator.elevator.config.views.ConfigView
+import com.example.elevatorsimulator.elevator.config.view.compose.ConfigView
 import com.example.elevatorsimulator.ui.theme.ElevatorSimulatorTheme
 
 class ConfigActivity : ComponentActivity() {

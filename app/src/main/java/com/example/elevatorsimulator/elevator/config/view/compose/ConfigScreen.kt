@@ -1,4 +1,4 @@
-package com.example.elevatorsimulator.elevator.config.views
+package com.example.elevatorsimulator.elevator.config.view.compose
 
 import android.content.Intent
 import android.widget.Toast
@@ -20,9 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.elevatorsimulator.MainActivity
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.config.ElevatorConfig
+import com.example.elevatorsimulator.elevator.view.ElevatorActivity
 import com.example.elevatorsimulator.uicomponents.NumberInput
 
 
@@ -33,7 +33,7 @@ fun ConfigView() {
     var speedInput by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val elevatorConfig = ElevatorConfig()
+    val elevatorConfig = ElevatorConfig
     val savedHighestFloor = elevatorConfig.getHighestFloor()
     val savedLowestFloor = elevatorConfig.getLowestFloor()
 
@@ -85,7 +85,7 @@ fun ConfigView() {
                 ).show()
             } else if (lowestFloor < highestFloor) {
                 if (elevatorConfig.save(lowestFloor, highestFloor)) {
-                    val intent = Intent(context, MainActivity::class.java)
+                    val intent = Intent(context, ElevatorActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     context.startActivity(intent)
                 }

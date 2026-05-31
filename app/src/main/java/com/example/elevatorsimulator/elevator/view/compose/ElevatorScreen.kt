@@ -1,7 +1,6 @@
-package com.example.elevatorsimulator.elevator.views
+package com.example.elevatorsimulator.elevator.view.compose
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,17 +36,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.ElevatorProps
-import com.example.elevatorsimulator.elevator.ElevatorViewModel
-import com.example.elevatorsimulator.elevator.config.ConfigActivity
+import com.example.elevatorsimulator.elevator.config.view.ConfigActivity
 import com.example.elevatorsimulator.uicomponents.PowerIcon
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
-    val currentFloor by elevatorViewModel.currentFloor.observeAsState()
-    val isTargetFloorReached by elevatorViewModel.isTargetFloorReached.observeAsState()
-    val elevatorStatus by elevatorViewModel.elevatorStatus.observeAsState()
+fun ElevatorView(
+    currentFloor: Int,
+    isTargetFloorReached: Boolean,
+    elevatorStatus: ElevatorProps.Status,
+    highestFloor: Int,
+    lowestFloor: Int,
+    move: (targetFloor: Int) -> Unit,
+    powerOn: () -> Unit,
+    powerOff: () -> Unit,
+) {
     val context = LocalContext.current
 
     var targetFloorInput by remember {
@@ -69,12 +72,9 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
                     indication = rememberRipple(bounded = false, radius = 64.dp),
                 ) {
                     if (elevatorStatus == ElevatorProps.Status.POWER_OFF) {
-                        Toast
-                            .makeText(context, "Powering on...", Toast.LENGTH_SHORT)
-                            .show()
-                        elevatorViewModel.powerOn()
+                        powerOn()
                     } else {
-                        elevatorViewModel.powerOff()
+                        powerOff()
                     }
                 }
         )
@@ -87,19 +87,11 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
     ) {
         Text(
             text = when (elevatorStatus) {
-                ElevatorProps.Status.MOVING_UP -> {
-                    "⬆︎"
-//                    "◭"
-                }
+                ElevatorProps.Status.MOVING_UP -> "⬆︎"
 
-                ElevatorProps.Status.MOVING_DOWN -> {
-                    "⬇︎"
-//                    "⧩"
-                }
+                ElevatorProps.Status.MOVING_DOWN -> "⬇︎"
 
-                else -> {
-                    ""
-                }
+                else -> ""
             },
         )
         Row(
@@ -110,7 +102,7 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "H:${elevatorViewModel.getHighestFloor()}\nL:${elevatorViewModel.getLowestFloor()}",
+                text = "H:$highestFloor\nL:$lowestFloor",
             )
         }
 
@@ -118,7 +110,7 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
             mutableStateOf("")
         }
         LaunchedEffect(isTargetFloorReached) {
-            ding = if (isTargetFloorReached == true) {
+            ding = if (isTargetFloorReached) {
                 "Ding!"
             } else {
                 ""
@@ -173,7 +165,7 @@ fun ElevatorView(elevatorViewModel: ElevatorViewModel) {
                 enabled = elevatorStatus == ElevatorProps.Status.IDLE && targetFloorInput.isNotBlank(),
                 modifier = Modifier.padding(8.dp),
                 onClick = {
-                    elevatorViewModel.move(targetFloorInput.toInt())
+                    move(targetFloorInput.toInt())
                     targetFloorInput = ""
                 }
             ) {
