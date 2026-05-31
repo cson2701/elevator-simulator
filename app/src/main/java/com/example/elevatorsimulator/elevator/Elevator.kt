@@ -101,7 +101,7 @@ class Elevator(
         targetFloor == currentFloor
 
     private fun isValidTargetFloor(targetFloor: Int) =
-        !(targetFloor > highestFloor || targetFloor < lowestFloor)
+        targetFloor in lowestFloor..highestFloor
 }
 
 interface ElevatorListener {

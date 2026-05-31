@@ -14,12 +14,12 @@
         android:theme="@style/Theme.ElevatorSimulator"
         tools:targetApi="31">
         <activity
-            android:name=".elevator.config.ConfigActivity"
+            android:name=".elevator.config.view.ConfigActivity"
             android:exported="false"
             android:label="@string/title_activity_config"
             android:theme="@style/Theme.ElevatorSimulator" />
         <activity
-            android:name=".MainActivity"
+            android:name=".elevator.view.ElevatorActivity"
             android:exported="true"
             android:theme="@style/Theme.ElevatorSimulator"
             android:windowSoftInputMode="adjustResize">

@@ -3,7 +3,7 @@ package com.example.elevatorsimulator.elevator.config
 import com.example.elevatorsimulator.elevator.exceptions.IllegalFloorException
 import com.example.elevatorsimulator.utils.TinyDbSingleton
 
-class ElevatorConfig {
+object ElevatorConfig {
     private val tinyDB = TinyDbSingleton.getInstance()
 
     private fun saveLowestFloor(lowestFloor: Int) {
