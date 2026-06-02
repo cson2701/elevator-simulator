@@ -3,20 +3,12 @@ package com.example.elevatorsimulator.elevator.config
 import com.example.elevatorsimulator.elevator.exceptions.IllegalFloorException
 import com.example.elevatorsimulator.utils.TinyDbSingleton
 
-object ElevatorConfig {
-    const val CLOSE_DOOR_DELAY = 4000L
-    private val tinyDB = TinyDbSingleton.getInstance()
+class ElevatorConfig private constructor() {
 
-    private fun saveLowestFloor(lowestFloor: Int) {
-        tinyDB?.putInt("lowestFloor", lowestFloor)
-    }
+    private val tinyDB get() = TinyDbSingleton.getInstance()
 
     fun getLowestFloor(): Int {
         return tinyDB?.getInt("lowestFloor", 0) ?: 0
-    }
-
-    private fun saveHighestFloor(highestFloor: Int) {
-        tinyDB?.putInt("highestFloor", highestFloor)
     }
 
     fun getHighestFloor(): Int {
@@ -26,11 +18,23 @@ object ElevatorConfig {
     @Throws(IllegalFloorException::class)
     fun save(lowestFloor: Int, highestFloor: Int): Boolean {
         if (lowestFloor < highestFloor) {
-            saveLowestFloor(lowestFloor)
-            saveHighestFloor(highestFloor)
+            tinyDB?.putInt("lowestFloor", lowestFloor)
+            tinyDB?.putInt("highestFloor", highestFloor)
             return true
         } else {
             throw IllegalFloorException("Lowest floor must lower than highest floor.")
+        }
+    }
+
+    companion object {
+        const val CLOSE_DOOR_DELAY = 3000L
+        private var instance: ElevatorConfig? = null
+
+        fun getInstance(): ElevatorConfig {
+            if (instance == null) {
+                instance = ElevatorConfig()
+            }
+            return instance!!
         }
     }
 }

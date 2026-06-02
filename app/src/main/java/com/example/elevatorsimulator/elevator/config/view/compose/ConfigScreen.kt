@@ -33,7 +33,7 @@ fun ConfigView() {
     var speedInput by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val elevatorConfig = ElevatorConfig
+    val elevatorConfig = ElevatorConfig.getInstance()
     val savedHighestFloor = elevatorConfig.getHighestFloor()
     val savedLowestFloor = elevatorConfig.getLowestFloor()
 

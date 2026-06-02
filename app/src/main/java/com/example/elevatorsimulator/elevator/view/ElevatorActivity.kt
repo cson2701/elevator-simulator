@@ -128,7 +128,7 @@ class ElevatorActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (ElevatorConfig.getLowestFloor() == 0 || ElevatorConfig.getHighestFloor() == 0) {
+        if (ElevatorConfig.getInstance().getLowestFloor() == 0 || ElevatorConfig.getInstance().getHighestFloor() == 0) {
             startActivity(Intent(this, ConfigActivity::class.java))
             finish()
         }
