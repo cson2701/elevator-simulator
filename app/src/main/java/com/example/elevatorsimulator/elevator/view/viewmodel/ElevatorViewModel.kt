@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class ElevatorViewModel : ViewModel() {
-    private val elevatorConfig = ElevatorConfig
+    private val elevatorConfig = ElevatorConfig.getInstance()
 
     private val initCurrentFloor = randomizeInitCurrentFloor()
 
