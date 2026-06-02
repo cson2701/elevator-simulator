@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +43,7 @@ fun ElevatorScreen(
     highestFloor: Int,
     lowestFloor: Int,
     openDoor: Boolean,
+    floorsInQueue: List<Int>,
     onDoorStateChange: (ElevatorDoorState) -> Unit,
     onFloorPressed: (targetFloor: Int) -> Unit,
     powerOn: () -> Unit,
@@ -126,7 +126,7 @@ fun ElevatorScreen(
                 FloorButtonsRow(
                     highestFloor = highestFloor,
                     lowestFloor = lowestFloor,
-                    currentFloor = currentFloor,
+                    floorsInQueue = floorsInQueue,
                     onFloorClick = { onFloorPressed(it) },
                     enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
                 )
@@ -152,7 +152,7 @@ fun ElevatorScreen(
 fun FloorButtonsRow(
     highestFloor: Int,
     lowestFloor: Int,
-    currentFloor: Int,
+    floorsInQueue: List<Int>,
     onFloorClick: (Int) -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
@@ -168,17 +168,16 @@ fun FloorButtonsRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         floors.forEach { floor ->
-            val isCurrentFloor = floor == currentFloor
             OutlinedButton(
                 onClick = { onFloorClick(floor) },
-                enabled = enabled && !isCurrentFloor,
+                enabled = enabled,
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier
                     .padding(vertical = 2.dp)
                     .size(44.dp),
                 contentPadding = PaddingValues(0.dp),
                 colors = when {
-                    isCurrentFloor -> ButtonDefaults.outlinedButtonColors(
+                    floorsInQueue.contains(floor) -> ButtonDefaults.outlinedButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -188,7 +187,6 @@ fun FloorButtonsRow(
             ) {
                 Text(
                     text = floor.toString(),
-                    fontWeight = if (isCurrentFloor) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 14.sp
                 )
             }
@@ -205,6 +203,7 @@ fun ElevatorScreenPreview() {
         highestFloor = 10,
         lowestFloor = 1,
         openDoor = false,
+        floorsInQueue = listOf(7, 8, 9),
         onDoorStateChange = {},
         onFloorPressed = {},
         powerOn = {},

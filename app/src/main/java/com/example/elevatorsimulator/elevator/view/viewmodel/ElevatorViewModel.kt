@@ -36,6 +36,7 @@ class ElevatorViewModel : ViewModel() {
     val elevatorStatus: StateFlow<ElevatorProps.Status> = _elevatorStatus
 
     private val elevatorQueue = ElevatorQueue()
+    val floorsInQueue: StateFlow<List<Int>> = elevatorQueue.queue
 
     private fun randomizeInitCurrentFloor(): Int {
         val lowestFloor = elevatorConfig.getLowestFloor()
@@ -91,11 +92,12 @@ class ElevatorViewModel : ViewModel() {
     private fun move() {
         viewModelScope.launch(Dispatchers.IO) {
             delay(100) // added a delay to let the view have time to react to previous false
-            while (elevatorQueue.hasNextFloorInQueue()) {
-                val nextFloorInQueue = elevatorQueue.getNextFloorInQueue()
-                elevatorControl?.move(nextFloorInQueue ?: return@launch) { reached ->
+            while (elevatorQueue.hasNextFloor()) {
+                val nextFloorInQueue = elevatorQueue.peekNextFloor() ?: return@launch
+                elevatorControl?.move(nextFloorInQueue) { reached ->
                     if (reached) {
                         _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(nextFloorInQueue))
+                        elevatorQueue.removeFloor(nextFloorInQueue)
                     }
                 }
                 _elevatorStatus.first { it == ElevatorProps.Status.IDLE }

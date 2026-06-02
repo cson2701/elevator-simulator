@@ -40,6 +40,7 @@ class ElevatorActivity : ComponentActivity() {
             val currentFloor by elevatorViewModel.currentFloor.collectAsState()
             val elevatorStatus by elevatorViewModel.elevatorStatus.collectAsState()
             val openDoor by elevatorViewModel.openDoor.collectAsState()
+            val floorsInQueue by elevatorViewModel.floorsInQueue.collectAsState()
 
             tts = TextToSpeech(this) { status ->
                 if (status == TextToSpeech.SUCCESS) {
@@ -58,6 +59,7 @@ class ElevatorActivity : ComponentActivity() {
                         highestFloor = elevatorViewModel.getHighestFloor(),
                         lowestFloor = elevatorViewModel.getLowestFloor(),
                         openDoor = openDoor,
+                        floorsInQueue = floorsInQueue,
                         onDoorStateChange = ::onDoorStateChange,
                         powerOn = ::powerOn,
                         powerOff = ::powerOff,
