@@ -1,5 +1,6 @@
 package com.example.elevatorsimulator.elevator.view.compose
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.ElevatorProps
+import com.example.elevatorsimulator.ui.theme.colors.Default
+import com.example.elevatorsimulator.ui.theme.colors.Disabled
+import com.example.elevatorsimulator.ui.theme.colors.FloorButton
+import com.example.elevatorsimulator.ui.theme.colors.Pressed
 import com.example.elevatorsimulator.uicomponents.PowerIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,6 +173,7 @@ fun FloorButtonsRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         floors.forEach { floor ->
+            val isPressed = floorsInQueue.contains(floor)
             OutlinedButton(
                 onClick = { onFloorClick(floor) },
                 enabled = enabled,
@@ -176,14 +182,20 @@ fun FloorButtonsRow(
                     .padding(vertical = 2.dp)
                     .size(44.dp),
                 contentPadding = PaddingValues(0.dp),
-                colors = when {
-                    floorsInQueue.contains(floor) -> ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    else -> ButtonDefaults.outlinedButtonColors()
-                }
+                border = BorderStroke(
+                    width = 1.5.dp,
+                    color = when {
+                        !enabled -> FloorButton.Border.Disabled
+                        isPressed -> FloorButton.Border.Pressed
+                        else -> FloorButton.Border.Default
+                    }
+                ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = FloorButton.Background.Default,
+                    contentColor = if (isPressed) FloorButton.Text.Pressed else FloorButton.Text.Default,
+                    disabledContainerColor = FloorButton.Background.Disabled,
+                    disabledContentColor = FloorButton.Text.Disabled
+                )
             ) {
                 Text(
                     text = floor.toString(),
