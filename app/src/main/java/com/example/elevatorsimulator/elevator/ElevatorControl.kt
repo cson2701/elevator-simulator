@@ -37,36 +37,9 @@ class ElevatorControl(
             currentFloor += if (currentFloor < targetFloor) 1 else -1
             elevatorListener.onFloorChangeListener(currentFloor)
         }
-        setStatus(ElevatorProps.Status.IDLE)
+        setStatus(ElevatorProps.Status.TARGET_FLOOR_REACHED)
         onTargetFloorReached(true)
-//        openDoor()
     }
-//
-//    override suspend fun openDoor() {
-//        if (status == ElevatorProps.Status.IDLE || status == ElevatorProps.Status.DOOR_CLOSING) {
-//            setStatus(ElevatorProps.Status.DOOR_OPENING)
-////            val doorOpeningJob = CoroutineScope(Dispatchers.Main).launch {
-////                delay(1000)
-////                setStatus(ElevatorProps.Status.DOOR_OPEN)
-////                delay(1500)
-////                closeDoor()
-////            }
-//            // TODO: Make door close interrupt-able
-//            // Check if the coroutine has been cancelled before proceeding further.
-////            if (isActive) {
-////                // Wait for the door opening process to complete.
-////                doorOpeningJob.join()
-////            }
-//        }
-//    }
-//
-//    override suspend fun closeDoor() {
-//        if (status == ElevatorProps.Status.DOOR_OPEN) {
-//            setStatus(ElevatorProps.Status.DOOR_CLOSING)
-////            delay(1000)
-////            setStatus(ElevatorProps.Status.IDLE)
-//        }
-//    }
 
     override fun reportDoorStatus(doorState: ElevatorDoorState) {
         when (doorState) {
@@ -81,7 +54,7 @@ class ElevatorControl(
 
     override suspend fun powerOn() {
         if (status == ElevatorProps.Status.POWER_OFF) {
-            delay(2500)
+            delay(1500)
             setStatus(ElevatorProps.Status.IDLE)
         }
     }

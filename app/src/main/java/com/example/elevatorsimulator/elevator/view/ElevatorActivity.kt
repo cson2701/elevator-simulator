@@ -61,7 +61,7 @@ class ElevatorActivity : ComponentActivity() {
                         onDoorStateChange = ::onDoorStateChange,
                         powerOn = ::powerOn,
                         powerOff = ::powerOff,
-                        move = { targetFloor -> elevatorViewModel.move(targetFloor) },
+                        onFloorPressed = { targetFloor -> elevatorViewModel.onFloorPressed(targetFloor) },
                         onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) }
                     )
                 }
