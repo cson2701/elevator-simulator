@@ -4,6 +4,7 @@ import com.example.elevatorsimulator.elevator.exceptions.IllegalFloorException
 import com.example.elevatorsimulator.utils.TinyDbSingleton
 
 object ElevatorConfig {
+    const val CLOSE_DOOR_DELAY = 4000L
     private val tinyDB = TinyDbSingleton.getInstance()
 
     private fun saveLowestFloor(lowestFloor: Int) {

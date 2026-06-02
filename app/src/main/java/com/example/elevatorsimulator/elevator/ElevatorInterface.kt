@@ -1,14 +1,14 @@
 package com.example.elevatorsimulator.elevator
 
+import com.example.elevatorsimulator.elevator.view.compose.ElevatorDoorState
+
 interface ElevatorInterface {
     suspend fun move(
         targetFloor: Int,
         onTargetFloorReached: (isTargetFloorReached: Boolean) -> Unit,
-    ): Boolean
+    )
 
-    suspend fun openDoor()
-
-    suspend fun closeDoor()
+    fun reportDoorStatus(doorState: ElevatorDoorState)
 
     fun status(): ElevatorProps.Status
 

@@ -26,16 +26,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.elevatorsimulator.R
 
-@Suppress("PreviewAnnotationInFunctionWithParameters")
-@Preview
 @Composable
 fun PowerIcon(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    isPowerOff: Boolean,
+    isPowerOn: Boolean,
 ) {
     val teal = colorResource(id = R.color.teal_200)
-    val red = colorResource(id = R.color.red)
+    val grey = colorResource(id = R.color.grey)
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
@@ -53,7 +51,7 @@ fun PowerIcon(
                     val circleRadius = iconSize.minDimension / 2
                     val circleCenter = Offset(iconSize.width / 2, iconSize.height / 2)
                     drawCircle(
-                        color = if (isPowerOff) teal else red,
+                        color = if (isPowerOn) teal else grey,
                         radius = circleRadius,
                         center = circleCenter
                     )
@@ -63,6 +61,18 @@ fun PowerIcon(
             tint = colorResource(id = R.color.white) // Replace with your actual green color resource
         )
     }
+}
+
+@Composable
+@Preview
+fun PowerIconPreviewOn() {
+    PowerIcon(isPowerOn = true)
+}
+
+@Composable
+@Preview
+fun PowerIconPreviewOff() {
+    PowerIcon(isPowerOn = false)
 }
 
 @Composable

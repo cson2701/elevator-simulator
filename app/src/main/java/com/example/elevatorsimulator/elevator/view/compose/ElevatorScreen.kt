@@ -1,6 +1,5 @@
 package com.example.elevatorsimulator.elevator.view.compose
 
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -21,39 +20,36 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.elevatorsimulator.R
 import com.example.elevatorsimulator.elevator.ElevatorProps
-import com.example.elevatorsimulator.elevator.config.view.ConfigActivity
 import com.example.elevatorsimulator.uicomponents.PowerIcon
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ElevatorView(
+fun ElevatorScreen(
     currentFloor: Int,
-    isTargetFloorReached: Boolean,
     elevatorStatus: ElevatorProps.Status,
     highestFloor: Int,
     lowestFloor: Int,
+    openDoor: Boolean,
+    onDoorStateChange: (ElevatorDoorState) -> Unit,
     move: (targetFloor: Int) -> Unit,
     powerOn: () -> Unit,
     powerOff: () -> Unit,
+    onConfigClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-
     var targetFloorInput by remember {
         mutableStateOf("")
     }
@@ -64,7 +60,7 @@ fun ElevatorView(
         contentAlignment = Alignment.Center
     ) {
         PowerIcon(
-            isPowerOff = elevatorStatus == ElevatorProps.Status.POWER_OFF,
+            isPowerOn = elevatorStatus != ElevatorProps.Status.POWER_OFF,
             modifier = Modifier
                 .size(128.dp)
                 .clickable(
@@ -106,27 +102,14 @@ fun ElevatorView(
             )
         }
 
-        var ding by remember {
-            mutableStateOf("")
-        }
-        LaunchedEffect(isTargetFloorReached) {
-            ding = if (isTargetFloorReached) {
-                "Ding!"
-            } else {
-                ""
-            }
-            delay(2000)
-            ding = ""
-        }
-        Text(
-            text = ding,
+        ElevatorDoorContent(
+            openDoor = openDoor,
+            onDoorStateChange = onDoorStateChange
         )
 
-        var doorStatus by remember {
-            mutableStateOf("")
-        }
-        LaunchedEffect(elevatorStatus) {
-            doorStatus = when (elevatorStatus) {
+        Spacer(modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            text = when (elevatorStatus) {
                 ElevatorProps.Status.DOOR_OPENING ->
                     "Door opening..."
 
@@ -139,11 +122,7 @@ fun ElevatorView(
                 else -> {
                     ""
                 }
-            }
-        }
-        Spacer(modifier = Modifier.padding(vertical = 4.dp))
-        Text(
-            text = doorStatus,
+            },
             fontSize = 20.sp
         )
 
@@ -172,11 +151,7 @@ fun ElevatorView(
                 Text(text = "Go!")
             }
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(
-                onClick = {
-                    context.startActivity(Intent(context, ConfigActivity::class.java))
-                },
-            ) {
+            IconButton(onConfigClick) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_settings),
                     contentDescription = "Config"
@@ -184,4 +159,21 @@ fun ElevatorView(
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun ElevatorScreenPreview() {
+    ElevatorScreen(
+        currentFloor = 5,
+        elevatorStatus = ElevatorProps.Status.IDLE,
+        highestFloor = 10,
+        lowestFloor = 1,
+        openDoor = false,
+        onDoorStateChange = {},
+        move = {},
+        powerOn = {},
+        powerOff = {},
+        onConfigClick = {},
+    )
 }
