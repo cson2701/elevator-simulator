@@ -14,6 +14,7 @@ class ElevatorProps {
         MOVING_UP,
         MOVING_DOWN,
         IDLE,
+        TARGET_FLOOR_REACHED,
         DOOR_OPENING,
         DOOR_OPEN,
         DOOR_CLOSING,
