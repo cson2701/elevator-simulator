@@ -1,0 +1,75 @@
+#name: Auto PR Title from Branch Issue
+#
+#on:
+#  pull_request:
+#    types: [opened, synchronize, reopened]
+#
+#permissions:
+#  pull-requests: write
+#  issues: read
+#
+#jobs:
+#  auto-title:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Extract issue number from branch name
+#        id: extract
+#        run: |
+#          BRANCH="${{ github.head_ref }}"
+#          echo "Branch name: $BRANCH"
+#
+#          if [[ "$BRANCH" =~ ^([0-9]+)- ]]; then
+#            ISSUE_NUMBER="${BASH_REMATCH[1]}"
+#            echo "issue=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+#          else
+#            echo "No issue number found in branch name"
+#            exit 1
+#          fi
+#
+#      - name: Fetch issue title
+#        id: issue
+#        uses: actions/github-script@v7
+#        with:
+#          script: |
+#            const issueNumber = parseInt("${{ steps.extract.outputs.issue }}", 10);
+#
+#            const issue = await github.rest.issues.get({
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              issue_number: issueNumber
+#            });
+#
+#            return issue.data.title;
+#
+#      - name: Build and set PR title
+#        uses: actions/github-script@v7
+#        with:
+#          script: |
+#            const issueNumber = "${{ steps.extract.outputs.issue }}";
+#            const issueTitle = ${{ steps.issue.outputs.result }};
+#            const pr = context.payload.pull_request;
+#
+#            const newTitle = `[${issueNumber}] ${issueTitle}`;
+#
+#            console.log("Setting PR title:", newTitle);
+#
+#            await github.rest.pulls.update({
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              pull_number: pr.number,
+#              title: newTitle
+#            });
+#
+#      - name: Validate final PR title format
+#        run: |
+#          TITLE="${{ github.event.pull_request.title }}"
+#
+#          echo "Final PR Title: $TITLE"
+#
+#          # MUST include [xx] + description
+#          if [[ ! "$TITLE" =~ ^\[[0-9]+\]\ .+ ]]; then
+#            echo "❌ PR title is invalid"
+#            echo "Expected format: [24] description"
+#            exit 1
+#          fi
