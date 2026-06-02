@@ -13,12 +13,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import com.example.elevatorsimulator.ui.theme.colors.Default
+import com.example.elevatorsimulator.ui.theme.colors.ElevatorDoor
 import kotlinx.coroutines.delay
 
 @Composable
@@ -48,6 +49,9 @@ fun ElevatorDoorContent(
         }
     }
 
+    val panelColor = ElevatorDoor.Panel.Default
+    val borderColor = ElevatorDoor.Border.Default
+
     Canvas(
         modifier = modifier
             .size(width = 200.dp, height = 300.dp)
@@ -60,12 +64,12 @@ fun ElevatorDoorContent(
 
         // Left door
         drawRect(
-            color = Color.Gray,
+            color = panelColor,
             topLeft = Offset(x = -offset, y = 0f),
             size = Size(doorWidth, doorHeight)
         )
         drawRect(
-            color = Color.Black,
+            color = borderColor,
             topLeft = Offset(x = -offset, y = 0f),
             size = Size(doorWidth, doorHeight),
             style = Stroke(width = 4f)
@@ -73,7 +77,7 @@ fun ElevatorDoorContent(
 
         // Right door
         drawRect(
-            color = Color.Gray,
+            color = panelColor,
             topLeft = Offset(
                 x = doorWidth + offset,
                 y = 0f
@@ -81,7 +85,7 @@ fun ElevatorDoorContent(
             size = Size(doorWidth, doorHeight)
         )
         drawRect(
-            color = Color.Black,
+            color = borderColor,
             topLeft = Offset(
                 x = doorWidth + offset,
                 y = 0f
@@ -98,7 +102,7 @@ fun ElevatorDoorContentPreview(
     @PreviewParameter(ElevatorDoorContentPreviewProvider::class)
     isOpen: Boolean
 ) {
-    var isOpenState by remember { mutableStateOf(true) }
+    var isOpenState by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         while (true) {
             delay(2000)
