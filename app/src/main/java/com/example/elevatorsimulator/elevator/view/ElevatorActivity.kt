@@ -13,10 +13,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.example.elevatorsimulator.R
-import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.elevator.config.view.ConfigActivity
 import com.example.elevatorsimulator.elevator.view.compose.ElevatorDoorState
@@ -24,9 +24,6 @@ import com.example.elevatorsimulator.elevator.view.compose.ElevatorScreen
 import com.example.elevatorsimulator.elevator.view.viewmodel.ElevatorEvent
 import com.example.elevatorsimulator.elevator.view.viewmodel.ElevatorViewModel
 import com.example.elevatorsimulator.ui.theme.ElevatorSimulatorTheme
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -47,6 +44,7 @@ class ElevatorActivity : ComponentActivity() {
             val elevatorStatus by elevatorViewModel.elevatorStatus.collectAsState()
             val openDoor by elevatorViewModel.openDoor.collectAsState()
             val floorsInQueue by elevatorViewModel.floorsInQueue.collectAsState()
+            val onDoorStateChangeStable = remember { { state: ElevatorDoorState -> onDoorStateChange(state) } }
 
             ElevatorSimulatorTheme {
                 Surface(
@@ -60,10 +58,10 @@ class ElevatorActivity : ComponentActivity() {
                         lowestFloor = elevatorViewModel.getLowestFloor(),
                         openDoor = openDoor,
                         floorsInQueue = floorsInQueue,
-                        onDoorStateChange = ::onDoorStateChange,
+                        onDoorStateChange = onDoorStateChangeStable,
                         powerOn = ::powerOn,
                         powerOff = ::powerOff,
-                        onFloorPressed = { targetFloor -> elevatorViewModel.onFloorPressed(targetFloor) },
+                        onFloorPressed = elevatorViewModel::onFloorPressed,
                         onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) }
                     )
                 }
@@ -79,14 +77,6 @@ class ElevatorActivity : ComponentActivity() {
                 when (event) {
                     is ElevatorEvent.TargetFloorReached -> {
                         playDing(targetFloor = event.floor)
-                        elevatorViewModel.openDoor()
-                        coroutineScope {
-                            launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
-                            launch {
-                                elevatorViewModel.elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
-                            }
-                        }
-                        elevatorViewModel.closeDoor()
                     }
                 }
             }
