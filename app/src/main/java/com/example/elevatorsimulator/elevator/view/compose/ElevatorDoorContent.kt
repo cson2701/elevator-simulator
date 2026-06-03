@@ -41,14 +41,6 @@ fun ElevatorDoorContent(
         }
     )
 
-    LaunchedEffect(openDoor) {
-        if (openDoor) {
-            onDoorStateChange(ElevatorDoorState.OPENING)
-        } else {
-            onDoorStateChange(ElevatorDoorState.CLOSING)
-        }
-    }
-
     val panelColor = ElevatorDoor.Panel.Default
     val borderColor = ElevatorDoor.Border.Default
 

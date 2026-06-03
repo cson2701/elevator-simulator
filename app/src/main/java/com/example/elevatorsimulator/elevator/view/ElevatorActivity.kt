@@ -36,17 +36,17 @@ class ElevatorActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        tts = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.language = Locale.getDefault()
+            }
+        }
+
         setContent {
             val currentFloor by elevatorViewModel.currentFloor.collectAsState()
             val elevatorStatus by elevatorViewModel.elevatorStatus.collectAsState()
             val openDoor by elevatorViewModel.openDoor.collectAsState()
             val floorsInQueue by elevatorViewModel.floorsInQueue.collectAsState()
-
-            tts = TextToSpeech(this) { status ->
-                if (status == TextToSpeech.SUCCESS) {
-                    tts?.language = Locale.getDefault()
-                }
-            }
 
             ElevatorSimulatorTheme {
                 Surface(
