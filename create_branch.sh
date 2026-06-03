@@ -20,5 +20,10 @@ SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 
 BRANCH_NAME="${ISSUE_NUMBER}-${SLUG}"
 
 # Create and checkout the branch
-git checkout -b "$BRANCH_NAME"
-echo "Created and checked out branch: $BRANCH_NAME"
+if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+  git checkout "$BRANCH_NAME"
+  echo "Switched to existing branch: $BRANCH_NAME"
+else
+  git checkout -b "$BRANCH_NAME"
+  echo "Created and checked out branch: $BRANCH_NAME"
+fi
