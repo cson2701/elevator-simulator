@@ -110,6 +110,7 @@ fun ElevatorScreen(
 
         ElevatorDoorContent(
             openDoor = openDoor,
+            elevatorStatus = elevatorStatus,
             onDoorStateChange = onDoorStateChange
         )
 

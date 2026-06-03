@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -18,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.ui.theme.colors.Default
 import com.example.elevatorsimulator.ui.theme.colors.ElevatorDoor
 import kotlinx.coroutines.delay
@@ -25,21 +27,34 @@ import kotlinx.coroutines.delay
 @Composable
 fun ElevatorDoorContent(
     openDoor: Boolean,
+    elevatorStatus: ElevatorProps.Status,
     modifier: Modifier = Modifier,
     onDoorStateChange: (ElevatorDoorState) -> Unit,
 ) {
+    val currentOnDoorStateChange by rememberUpdatedState(onDoorStateChange)
+
     val progress by animateFloatAsState(
         targetValue = if (openDoor) 1f else 0f,
         animationSpec = tween(durationMillis = if (openDoor) DOOR_OPEN_DURATION.toInt() else DOOR_CLOSE_DURATION.toInt()),
         label = "door",
         finishedListener = { finalValue ->
             if (finalValue == 1f) {
-                onDoorStateChange(ElevatorDoorState.OPEN)
+                currentOnDoorStateChange(ElevatorDoorState.OPEN)
             } else if (finalValue == 0f) {
-                onDoorStateChange(ElevatorDoorState.CLOSED)
+                currentOnDoorStateChange(ElevatorDoorState.CLOSED)
             }
         }
     )
+
+    // Handle rotation or re-composition where the animation finished listener might be missed.
+    // We only report if the elevator is currently in an intermediate state but the animation is at the target.
+    LaunchedEffect(openDoor, elevatorStatus) {
+        if (openDoor && elevatorStatus == ElevatorProps.Status.DOOR_OPENING && progress == 1f) {
+            currentOnDoorStateChange(ElevatorDoorState.OPEN)
+        } else if (!openDoor && elevatorStatus == ElevatorProps.Status.DOOR_CLOSING && progress == 0f) {
+            currentOnDoorStateChange(ElevatorDoorState.CLOSED)
+        }
+    }
 
     val panelColor = ElevatorDoor.Panel.Default
     val borderColor = ElevatorDoor.Border.Default
@@ -48,6 +63,7 @@ fun ElevatorDoorContent(
         modifier = modifier
             .size(width = 200.dp, height = 300.dp)
     ) {
+        val progress = progress
         val doorWidth = size.width / 2f
         val doorHeight = size.height
 
@@ -101,7 +117,10 @@ fun ElevatorDoorContentPreview(
             isOpenState = !isOpenState
         }
     }
-    ElevatorDoorContent(openDoor = isOpenState) {}
+    ElevatorDoorContent(
+        openDoor = isOpenState,
+        elevatorStatus = ElevatorProps.Status.IDLE
+    ) {}
 }
 
 private class ElevatorDoorContentPreviewProvider : PreviewParameterProvider<Boolean> {
