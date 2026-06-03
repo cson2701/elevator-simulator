@@ -9,7 +9,6 @@ import com.example.elevatorsimulator.elevator.ElevatorProps
 import com.example.elevatorsimulator.elevator.ElevatorQueue
 import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.elevator.view.compose.ElevatorDoorState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +49,7 @@ class ElevatorViewModel : ViewModel() {
     private var elevatorControl: ElevatorControl? = null
 
     fun powerOn() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             buildElevator()
             elevatorControl?.powerOn()
         }
@@ -90,7 +89,7 @@ class ElevatorViewModel : ViewModel() {
     }
 
     private fun move() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             delay(100) // added a delay to let the view have time to react to previous false
             while (elevatorQueue.hasNextFloor()) {
                 val nextFloorInQueue = elevatorQueue.peekNextFloor() ?: return@launch
@@ -117,6 +116,7 @@ class ElevatorViewModel : ViewModel() {
     fun openDoor(): Boolean {
         if (elevatorControl?.status() == ElevatorProps.Status.IDLE || elevatorControl?.status() == ElevatorProps.Status.TARGET_FLOOR_REACHED || elevatorControl?.status() == ElevatorProps.Status.DOOR_CLOSING) {
             _openDoor.value = true
+            reportDoorState(ElevatorDoorState.OPENING)
             return true
         }
         return false
@@ -128,6 +128,7 @@ class ElevatorViewModel : ViewModel() {
     fun closeDoor(): Boolean {
         if (elevatorControl?.status() == ElevatorProps.Status.DOOR_OPEN) {
             _openDoor.value = false
+            reportDoorState(ElevatorDoorState.CLOSING)
             return true
         }
         return false
