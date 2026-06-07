@@ -10,7 +10,7 @@ class ElevatorProps {
         SPEED_3_5(3500),
     }
 
-    enum class Status{
+    enum class Status {
         MOVING_UP,
         MOVING_DOWN,
         IDLE,
@@ -21,5 +21,11 @@ class ElevatorProps {
         DOOR_CLOSED,
         POWER_OFF,
         POWER_ON,
+    }
+
+    enum class ServiceDirection {
+        UP,
+        DOWN,
+        IDLE,
     }
 }
