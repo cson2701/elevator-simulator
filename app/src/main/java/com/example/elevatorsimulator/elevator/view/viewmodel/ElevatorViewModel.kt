@@ -48,19 +48,22 @@ class ElevatorViewModel : ViewModel() {
     fun getLowestFloor() = elevatorConfig.getLowestFloor()
     fun getHighestFloor() = elevatorConfig.getHighestFloor()
 
-    private var elevatorControl: ElevatorControl? = null
+    private val elevatorControl: ElevatorControl
+        get() = ElevatorControl.getInstance()
 
     fun powerOn() {
         viewModelScope.launch {
-            if (elevatorControl == null) {
+            try {
+                elevatorControl.powerOn()
+            } catch (_: UninitializedPropertyAccessException) {
                 buildElevator()
+                elevatorControl.powerOn()
             }
-            elevatorControl?.powerOn()
         }
     }
 
     private fun buildElevator() {
-        elevatorControl = ElevatorBuilder(object : ElevatorListener {
+        ElevatorBuilder(object : ElevatorListener {
             override fun onFloorChangeListener(currentFloor: Int) {
                 println("currentFloor = $currentFloor")
                 _currentFloor.value = currentFloor
@@ -80,8 +83,8 @@ class ElevatorViewModel : ViewModel() {
     }
 
     fun powerOff() {
-        if (elevatorControl?.status() == ElevatorProps.Status.IDLE) {
-            elevatorControl?.powerOff()
+        if (elevatorControl.status() == ElevatorProps.Status.IDLE) {
+            elevatorControl.powerOff()
         }
     }
 
@@ -89,22 +92,19 @@ class ElevatorViewModel : ViewModel() {
 
     fun onFloorPressed(targetFloor: Int) {
         elevatorQueue.addFloor(targetFloor)
-        if (moveJob?.isActive != true && elevatorControl?.status() == ElevatorProps.Status.IDLE) {
+        if (moveJob?.isActive != true && elevatorControl.status() == ElevatorProps.Status.IDLE) {
             moveJob = move()
         }
     }
 
     private fun move(): Job = viewModelScope.launch {
         while (elevatorQueue.hasNextFloor()) {
-            val nextFloorInQueue = elevatorQueue.peekNextFloor() ?: break
-            var reached = false
-            elevatorControl?.move(nextFloorInQueue) {
-                reached = it
-            }
+            val destination = elevatorQueue.peekNextFloor() ?: break
+            val current = _currentFloor.value
 
-            if (reached) {
-                _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(nextFloorInQueue))
-                elevatorQueue.removeFloor(nextFloorInQueue)
+            if (destination == current) {
+                _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(current))
+                elevatorQueue.removeFloor(current)
 
                 openDoor()
                 coroutineScope {
@@ -114,14 +114,39 @@ class ElevatorViewModel : ViewModel() {
                     }
                 }
                 closeDoor()
+                _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                continue
             }
-            _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+
+            val nextFloor = if (destination > current) current + 1 else current - 1
+            var reached = false
+            elevatorControl.move(nextFloor) {
+                reached = it
+            }
+
+            if (reached) {
+                if (elevatorQueue.peekNextFloor() == _currentFloor.value) {
+                    val arrivedFloor = _currentFloor.value
+                    _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(arrivedFloor))
+                    elevatorQueue.removeFloor(arrivedFloor)
+
+                    openDoor()
+                    coroutineScope {
+                        launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
+                        launch {
+                            elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
+                        }
+                    }
+                    closeDoor()
+                    _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                }
+            }
         }
     }
 
     fun reportDoorState(doorState: ElevatorDoorState) {
         viewModelScope.launch {
-            elevatorControl?.reportDoorStatus(doorState)
+            elevatorControl.reportDoorStatus(doorState)
         }
     }
 
@@ -129,9 +154,9 @@ class ElevatorViewModel : ViewModel() {
      * Returns true if the door is opening, false otherwise.
      */
     fun openDoor(): Boolean {
-        if (elevatorControl?.status() == ElevatorProps.Status.IDLE ||
-            elevatorControl?.status() == ElevatorProps.Status.TARGET_FLOOR_REACHED ||
-            elevatorControl?.status() == ElevatorProps.Status.DOOR_CLOSING
+        if (elevatorControl.status() == ElevatorProps.Status.IDLE ||
+            elevatorControl.status() == ElevatorProps.Status.TARGET_FLOOR_REACHED ||
+            elevatorControl.status() == ElevatorProps.Status.DOOR_CLOSING
         ) {
             _openDoor.value = true
             reportDoorState(ElevatorDoorState.OPENING)
@@ -144,7 +169,7 @@ class ElevatorViewModel : ViewModel() {
      * Returns true if the door is closing, false otherwise.
      */
     fun closeDoor(): Boolean {
-        if (elevatorControl?.status() == ElevatorProps.Status.DOOR_OPEN) {
+        if (elevatorControl.status() == ElevatorProps.Status.DOOR_OPEN) {
             _openDoor.value = false
             reportDoorState(ElevatorDoorState.CLOSING)
             return true

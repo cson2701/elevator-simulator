@@ -33,6 +33,6 @@ class ElevatorBuilder(private val elevatorListener: ElevatorListener) {
     }
 
     fun build(): ElevatorControl {
-        return ElevatorControl(lowestFloor, highestFloor, currentFloor, speed, elevatorListener)
+        return ElevatorControl.build(lowestFloor, highestFloor, currentFloor, speed, elevatorListener)
     }
 }

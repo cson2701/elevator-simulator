@@ -5,15 +5,16 @@ import com.example.elevatorsimulator.elevator.exceptions.ElevatorNotPoweredOnExc
 import com.example.elevatorsimulator.elevator.view.compose.ElevatorDoorState
 import kotlinx.coroutines.delay
 
-class ElevatorControl(
+class ElevatorControl private constructor(
     private val lowestFloor: Int,
     private val highestFloor: Int,
     private var currentFloor: Int,
     private val speed: Long,
     private val elevatorListener: ElevatorListener,
 ) : ElevatorInterface {
-
     private var status: ElevatorProps.Status = ElevatorProps.Status.POWER_OFF
+    var serviceDirection: ElevatorProps.ServiceDirection = ElevatorProps.ServiceDirection.IDLE
+        private set
 
     @Throws(ElevatorNotPoweredOnException::class)
     override suspend fun move(
@@ -28,8 +29,10 @@ class ElevatorControl(
         }
         while (!isTargetFloorReached(targetFloor, currentFloor)) {
             val direction = if (currentFloor < targetFloor) {
+                serviceDirection = ElevatorProps.ServiceDirection.UP
                 ElevatorProps.Status.MOVING_UP
             } else {
+                serviceDirection = ElevatorProps.ServiceDirection.DOWN
                 ElevatorProps.Status.MOVING_DOWN
             }
             setStatus(direction)
@@ -70,8 +73,15 @@ class ElevatorControl(
         return status
     }
 
+    fun getCurrentFloor(): Int {
+        return currentFloor
+    }
+
     private fun setStatus(status: ElevatorProps.Status) {
         this.status = status
+        if (status == ElevatorProps.Status.IDLE) {
+            serviceDirection = ElevatorProps.ServiceDirection.IDLE
+        }
         elevatorListener.onStatusChangeListener(status = status)
     }
 
@@ -80,6 +90,25 @@ class ElevatorControl(
 
     private fun isValidTargetFloor(targetFloor: Int) =
         targetFloor in lowestFloor..highestFloor
+
+    companion object {
+        private var instance: ElevatorControl? = null
+
+        fun getInstance(): ElevatorControl {
+            return instance ?: throw UninitializedPropertyAccessException("ElevatorControl is not initialized. Call build() first.")
+        }
+
+        fun build(
+            lowestFloor: Int,
+            highestFloor: Int,
+            currentFloor: Int,
+            speed: Long,
+            elevatorListener: ElevatorListener,
+        ): ElevatorControl {
+            instance = ElevatorControl(lowestFloor, highestFloor, currentFloor, speed, elevatorListener)
+            return instance!!
+        }
+    }
 }
 
 interface ElevatorListener {
