@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 object ElevatorDoor {
     object Panel
     object Border
+    object Cover
 }
 
 val ElevatorDoor.Panel.Default: Color
@@ -20,4 +21,11 @@ val ElevatorDoor.Border.Default: Color
     get() = pickColor(
         light = Color(0xFF3A4D56),
         dark = Color(0xFF95B3C0),
+    )
+
+val ElevatorDoor.Cover.Default: Color
+    @Composable
+    get() = pickColor(
+        light = Color(0xFF78909C), // Blue Grey 400
+        dark = Color(0xFF263238)  // Blue Grey 900
     )
