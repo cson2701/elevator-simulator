@@ -42,6 +42,7 @@ class ElevatorActivity : ComponentActivity() {
         setContent {
             val currentFloor by elevatorViewModel.currentFloor.collectAsState()
             val elevatorStatus by elevatorViewModel.elevatorStatus.collectAsState()
+            val serviceDirection by elevatorViewModel.serviceDirection.collectAsState()
             val openDoor by elevatorViewModel.openDoor.collectAsState()
             val floorsInQueue by elevatorViewModel.floorsInQueue.collectAsState()
             val onDoorStateChangeStable = remember { { state: ElevatorDoorState -> onDoorStateChange(state) } }
@@ -54,6 +55,7 @@ class ElevatorActivity : ComponentActivity() {
                     ElevatorScreen(
                         currentFloor = currentFloor,
                         elevatorStatus = elevatorStatus,
+                        serviceDirection = serviceDirection,
                         highestFloor = elevatorViewModel.getHighestFloor(),
                         lowestFloor = elevatorViewModel.getLowestFloor(),
                         openDoor = openDoor,

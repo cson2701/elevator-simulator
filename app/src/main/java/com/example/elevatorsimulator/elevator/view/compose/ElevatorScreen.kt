@@ -50,6 +50,7 @@ import com.example.elevatorsimulator.uicomponents.SevenSegmentPanel
 fun ElevatorScreen(
     currentFloor: Int,
     elevatorStatus: ElevatorProps.Status,
+    serviceDirection: ElevatorProps.ServiceDirection,
     highestFloor: Int,
     lowestFloor: Int,
     openDoor: Boolean,
@@ -86,19 +87,10 @@ fun ElevatorScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text(
-                text = when (elevatorStatus) {
-                    ElevatorProps.Status.MOVING_UP -> "⬆︎"
-                    ElevatorProps.Status.MOVING_DOWN -> "⬇︎"
-                    else -> " "
-                },
-                fontSize = 20.sp,
-            )
             SevenSegmentPanel(
                 value = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) null else currentFloor,
-                modifier = Modifier
-                    .width(80.dp)
-                    .padding(vertical = 4.dp)
+                serviceDirection = serviceDirection,
+                modifier = Modifier.width(110.dp)
             )
         }
 
@@ -280,6 +272,7 @@ fun ElevatorScreenPreview() {
     ElevatorScreen(
         currentFloor = 24,
         elevatorStatus = ElevatorProps.Status.IDLE,
+        serviceDirection = ElevatorProps.ServiceDirection.UP,
         highestFloor = 10,
         lowestFloor = 1,
         openDoor = false,

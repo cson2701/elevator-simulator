@@ -36,6 +36,9 @@ class ElevatorViewModel : ViewModel() {
     private val _elevatorStatus = MutableStateFlow(ElevatorProps.Status.POWER_OFF)
     val elevatorStatus: StateFlow<ElevatorProps.Status> = _elevatorStatus
 
+    private val _serviceDirection = MutableStateFlow(ElevatorProps.ServiceDirection.IDLE)
+    val serviceDirection: StateFlow<ElevatorProps.ServiceDirection> = _serviceDirection
+
     private val elevatorQueue = ElevatorQueue()
     val floorsInQueue: StateFlow<List<Int>> = elevatorQueue.queue
 
@@ -72,6 +75,11 @@ class ElevatorViewModel : ViewModel() {
             override fun onStatusChangeListener(status: ElevatorProps.Status) {
                 println("status = $status")
                 _elevatorStatus.value = status
+            }
+
+            override fun onServiceDirectionChangeListener(direction: ElevatorProps.ServiceDirection) {
+                println("direction = $direction")
+                _serviceDirection.value = direction
             }
         })
             .setLowestFloor(elevatorConfig.getLowestFloor())
