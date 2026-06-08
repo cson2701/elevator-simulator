@@ -1,8 +1,8 @@
 package com.example.elevatorsimulator.elevator.view.compose
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +43,7 @@ import com.example.elevatorsimulator.ui.theme.colors.Disabled
 import com.example.elevatorsimulator.ui.theme.colors.FloorButton
 import com.example.elevatorsimulator.ui.theme.colors.Pressed
 import com.example.elevatorsimulator.uicomponents.PowerIcon
+import com.example.elevatorsimulator.uicomponents.SevenSegmentPanel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,67 +58,58 @@ fun ElevatorScreen(
     onFloorPressed: (targetFloor: Int) -> Unit,
     powerOn: () -> Unit,
     powerOff: () -> Unit,
+    onOpenDoor: () -> Unit,
+    onCloseDoor: () -> Unit,
     onConfigClick: () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+        // Top Info Bar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = when (elevatorStatus) {
-                        ElevatorProps.Status.MOVING_UP -> "⬆︎"
-
-                        ElevatorProps.Status.MOVING_DOWN -> "⬇︎"
-
-                        else -> ""
-                    },
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) "--" else currentFloor.toString(),
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "H:$highestFloor\nL:$lowestFloor",
-                    )
-                }
-                PowerIcon(
-                    isPowerOn = elevatorStatus != ElevatorProps.Status.POWER_OFF,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = rememberRipple(bounded = false, radius = 32.dp),
-                        ) {
-                            if (elevatorStatus == ElevatorProps.Status.POWER_OFF) {
-                                powerOn()
-                            } else {
-                                powerOff()
-                            }
-                        }
-                )
-            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "H:$highestFloor | L:$lowestFloor",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.weight(1f))
         }
 
+        // Indicator Panel
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text(
+                text = when (elevatorStatus) {
+                    ElevatorProps.Status.MOVING_UP -> "⬆︎"
+                    ElevatorProps.Status.MOVING_DOWN -> "⬇︎"
+                    else -> " "
+                },
+                fontSize = 20.sp,
+            )
+            SevenSegmentPanel(
+                value = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) null else currentFloor,
+                modifier = Modifier
+                    .width(80.dp)
+                    .padding(vertical = 4.dp)
+            )
+        }
+
+        // Door Area
         ElevatorDoorContent(
             openDoor = openDoor,
             elevatorStatus = elevatorStatus,
             onDoorStateChange = onDoorStateChange
         )
 
+        // Scrollable Floor Buttons
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,7 +117,9 @@ fun ElevatorScreen(
                 .padding(top = 16.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -136,20 +134,89 @@ fun ElevatorScreen(
                     onFloorClick = { onFloorPressed(it) },
                     enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onConfigClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_settings),
-                            contentDescription = "Config"
-                        )
-                    }
-                }
             }
         }
+
+        // Bottom Operations Bar
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState())
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Power Button (Square)
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PowerIcon(
+                        isPowerOn = elevatorStatus != ElevatorProps.Status.POWER_OFF,
+                        modifier = Modifier.size(32.dp),
+                        onClick = {
+                            if (elevatorStatus == ElevatorProps.Status.POWER_OFF) powerOn() else powerOff()
+                        }
+                    )
+                }
+
+                // Door Open Button
+                OperationButton(
+                    onClick = onOpenDoor,
+                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                ) {
+                    Text("<|>", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // Door Close Button
+                OperationButton(
+                    onClick = onCloseDoor,
+                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                ) {
+                    Text(">|<", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // Fixed Config Button
+            IconButton(onClick = onConfigClick, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_settings),
+                    contentDescription = "Config",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OperationButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.size(56.dp),
+        shape = RoundedCornerShape(8.dp),
+        contentPadding = PaddingValues(0.dp),
+        enabled = enabled,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        content()
     }
 }
 
@@ -211,7 +278,7 @@ fun FloorButtonsRow(
 @Preview
 fun ElevatorScreenPreview() {
     ElevatorScreen(
-        currentFloor = 5,
+        currentFloor = 24,
         elevatorStatus = ElevatorProps.Status.IDLE,
         highestFloor = 10,
         lowestFloor = 1,
@@ -221,6 +288,8 @@ fun ElevatorScreenPreview() {
         onFloorPressed = {},
         powerOn = {},
         powerOff = {},
+        onOpenDoor = {},
+        onCloseDoor = {},
         onConfigClick = {},
     )
 }
