@@ -83,6 +83,7 @@ class ElevatorControl private constructor(
             serviceDirection = ElevatorProps.ServiceDirection.IDLE
         }
         elevatorListener.onStatusChangeListener(status = status)
+        elevatorListener.onServiceDirectionChangeListener(serviceDirection)
     }
 
     private fun isTargetFloorReached(targetFloor: Int, currentFloor: Int) =
@@ -115,4 +116,6 @@ interface ElevatorListener {
     fun onFloorChangeListener(currentFloor: Int)
 
     fun onStatusChangeListener(status: ElevatorProps.Status)
+
+    fun onServiceDirectionChangeListener(direction: ElevatorProps.ServiceDirection)
 }
