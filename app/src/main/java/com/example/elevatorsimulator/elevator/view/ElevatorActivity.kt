@@ -66,7 +66,8 @@ class ElevatorActivity : ComponentActivity() {
                         onOpenDoor = { elevatorViewModel.openDoor() },
                         onCloseDoor = { elevatorViewModel.closeDoor() },
                         onFloorPressed = elevatorViewModel::onFloorPressed,
-                        onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) }
+                        onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) },
+                        onAlarmClick = { playAlarm() }
                     )
                 }
             }
@@ -97,6 +98,14 @@ class ElevatorActivity : ComponentActivity() {
                 "greeting"
             )
 
+            it.release()
+        }
+        mediaPlayer.start()
+    }
+
+    private fun playAlarm() {
+        val mediaPlayer = MediaPlayer.create(this, R.raw.elevator_ding)
+        mediaPlayer.setOnCompletionListener {
             it.release()
         }
         mediaPlayer.start()
