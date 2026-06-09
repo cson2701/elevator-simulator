@@ -100,7 +100,11 @@ class ElevatorViewModel : ViewModel() {
 
     fun onFloorPressed(targetFloor: Int) {
         elevatorQueue.addFloor(targetFloor)
-        if (moveJob?.isActive != true && elevatorControl.status() == ElevatorProps.Status.IDLE) {
+        val status = elevatorControl.status()
+        val canStartMove = status != ElevatorProps.Status.POWER_OFF &&
+                status != ElevatorProps.Status.MOVING_UP &&
+                status != ElevatorProps.Status.MOVING_DOWN
+        if (moveJob?.isActive != true && canStartMove) {
             moveJob = move()
         }
     }
@@ -108,6 +112,17 @@ class ElevatorViewModel : ViewModel() {
     private fun move(): Job = viewModelScope.launch {
         while (elevatorQueue.hasNextFloor()) {
             val destination = elevatorQueue.peekNextFloor() ?: break
+
+            // Ensure the door is closed before moving
+            val status = elevatorControl.status()
+            if (status == ElevatorProps.Status.DOOR_OPEN ||
+                status == ElevatorProps.Status.DOOR_OPENING ||
+                status == ElevatorProps.Status.DOOR_CLOSING
+            ) {
+                // Wait for the door to be fully closed (status becomes IDLE)
+                _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+            }
+
             val current = _currentFloor.value
 
             if (destination == current) {
@@ -139,13 +154,6 @@ class ElevatorViewModel : ViewModel() {
                     elevatorQueue.removeFloor(arrivedFloor)
 
                     openDoor()
-                    coroutineScope {
-                        launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
-                        launch {
-                            elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
-                        }
-                    }
-                    closeDoor()
                     _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
                 }
             }
@@ -168,6 +176,15 @@ class ElevatorViewModel : ViewModel() {
         ) {
             _openDoor.value = true
             reportDoorState(ElevatorDoorState.OPENING)
+            viewModelScope.launch {
+                coroutineScope {
+                    launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
+                    launch {
+                        elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
+                    }
+                }
+                closeDoor()
+            }
             return true
         }
         return false
