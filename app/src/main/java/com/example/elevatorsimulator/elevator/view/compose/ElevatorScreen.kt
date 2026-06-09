@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -62,6 +61,7 @@ fun ElevatorScreen(
     onOpenDoor: () -> Unit,
     onCloseDoor: () -> Unit,
     onConfigClick: () -> Unit,
+    onAlarmClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -69,19 +69,6 @@ fun ElevatorScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Info Bar
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "H:$highestFloor | L:$lowestFloor",
-                style = MaterialTheme.typography.bodySmall
-            )
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
         // Indicator Panel
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -101,12 +88,42 @@ fun ElevatorScreen(
             onDoorStateChange = onDoorStateChange
         )
 
+        // Operational Buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OperationButton(
+                onClick = onOpenDoor,
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+            ) {
+                Text("<|>", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+
+            OperationButton(
+                onClick = onCloseDoor,
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+            ) {
+                Text(">|<", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+
+            OperationButton(
+                onClick = onAlarmClick,
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+            ) {
+                Text("🔔", fontSize = 20.sp)
+            }
+        }
+
         // Scrollable Floor Buttons
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(top = 16.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -114,11 +131,6 @@ fun ElevatorScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Floor Selection",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
                 FloorButtonsRow(
                     highestFloor = highestFloor,
                     lowestFloor = lowestFloor,
@@ -160,22 +172,6 @@ fun ElevatorScreen(
                             if (elevatorStatus == ElevatorProps.Status.POWER_OFF) powerOn() else powerOff()
                         }
                     )
-                }
-
-                // Door Open Button
-                OperationButton(
-                    onClick = onOpenDoor,
-                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
-                ) {
-                    Text("<|>", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-
-                // Door Close Button
-                OperationButton(
-                    onClick = onCloseDoor,
-                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
-                ) {
-                    Text(">|<", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
