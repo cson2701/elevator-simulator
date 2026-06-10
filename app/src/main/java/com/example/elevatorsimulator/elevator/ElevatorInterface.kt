@@ -10,6 +10,8 @@ interface ElevatorInterface {
 
     fun reportDoorStatus(doorState: ElevatorDoorState)
 
+    fun reportTargetReached()
+
     fun status(): ElevatorProps.Status
 
     suspend fun powerOn()
