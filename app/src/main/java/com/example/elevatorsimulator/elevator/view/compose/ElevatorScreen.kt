@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +56,7 @@ fun ElevatorScreen(
     lowestFloor: Int,
     openDoor: Boolean,
     floorsInQueue: List<Int>,
+    logs: List<String>,
     onDoorStateChange: (ElevatorDoorState) -> Unit,
     onFloorPressed: (targetFloor: Int) -> Unit,
     powerOn: () -> Unit,
@@ -147,13 +150,9 @@ fun ElevatorScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 // Power Button (Square)
                 Box(
@@ -173,16 +172,34 @@ fun ElevatorScreen(
                         }
                     )
                 }
+
+                // Fixed Config Button
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(onClick = onConfigClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_settings),
+                            contentDescription = "Config",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
             }
 
-            // Fixed Config Button
-            IconButton(onClick = onConfigClick, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
-                    contentDescription = "Config",
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+            // Logs Section
+            LogsSection(
+                logs = logs,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp)
+            )
         }
     }
 }
@@ -263,6 +280,33 @@ fun FloorButtonsRow(
 }
 
 @Composable
+fun LogsSection(logs: List<String>, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column {
+                logs.forEach { log ->
+                    Text(
+                        text = log,
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 @Preview
 fun ElevatorScreenPreview() {
     ElevatorScreen(
@@ -273,6 +317,7 @@ fun ElevatorScreenPreview() {
         lowestFloor = 1,
         openDoor = false,
         floorsInQueue = listOf(7, 8, 9),
+        logs = listOf("[12:00:00] Status: IDLE", "[12:00:01] Door State: OPENING"),
         onDoorStateChange = {},
         onFloorPressed = {},
         powerOn = {},

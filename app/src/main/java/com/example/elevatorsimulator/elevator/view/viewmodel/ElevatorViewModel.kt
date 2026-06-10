@@ -17,6 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ElevatorViewModel : ViewModel() {
     private val elevatorConfig = ElevatorConfig.getInstance()
@@ -38,12 +41,24 @@ class ElevatorViewModel : ViewModel() {
     private val _serviceDirection = MutableStateFlow(ElevatorProps.ServiceDirection.IDLE)
     val serviceDirection: StateFlow<ElevatorProps.ServiceDirection> = _serviceDirection
 
+    private val _logs = MutableStateFlow<List<String>>(emptyList())
+    val logs: StateFlow<List<String>> = _logs
+
     private val elevatorQueue = ElevatorQueue()
     val floorsInQueue: StateFlow<List<Int>> = elevatorQueue.queue
 
     private val _isProximityObstructed = MutableStateFlow(false)
 
     private var doorClosingJob: Job? = null
+
+    init {
+        addLog("Elevator Config: Low=${elevatorConfig.getLowestFloor()}, High=${elevatorConfig.getHighestFloor()}")
+    }
+
+    private fun addLog(message: String) {
+        val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        _logs.value = listOf("[$timestamp] $message") + _logs.value.take(99)
+    }
 
     private fun randomizeInitCurrentFloor(): Int {
         val lowestFloor = elevatorConfig.getLowestFloor()
@@ -58,6 +73,7 @@ class ElevatorViewModel : ViewModel() {
         get() = ElevatorControl.getInstance()
 
     fun powerOn() {
+        addLog("Powering on...")
         viewModelScope.launch {
             try {
                 elevatorControl.powerOn()
@@ -69,6 +85,7 @@ class ElevatorViewModel : ViewModel() {
     }
 
     private fun buildElevator() {
+        addLog("Building elevator...")
         ElevatorBuilder(object : ElevatorListener {
             override fun onFloorChangeListener(currentFloor: Int) {
                 println("currentFloor = $currentFloor")
@@ -78,11 +95,13 @@ class ElevatorViewModel : ViewModel() {
             override fun onStatusChangeListener(status: ElevatorProps.Status) {
                 println("status = $status")
                 _elevatorStatus.value = status
+                addLog("Status: $status")
             }
 
             override fun onServiceDirectionChangeListener(direction: ElevatorProps.ServiceDirection) {
                 println("direction = $direction")
                 _serviceDirection.value = direction
+                addLog("Direction: $direction")
             }
         })
             .setLowestFloor(elevatorConfig.getLowestFloor())
@@ -95,11 +114,15 @@ class ElevatorViewModel : ViewModel() {
 
     fun powerOff() {
         if (elevatorControl.status() == ElevatorProps.Status.IDLE) {
+            addLog("Powering off...")
             elevatorControl.powerOff()
         }
     }
 
     fun setProximityObstructed(obstructed: Boolean) {
+        if (_isProximityObstructed.value != obstructed) {
+            addLog("Proximity: ${if (obstructed) "OBSTRUCTED" else "CLEAR"}")
+        }
         _isProximityObstructed.value = obstructed
         if (obstructed && elevatorControl.status() == ElevatorProps.Status.DOOR_CLOSING) {
             openDoor()
@@ -109,7 +132,9 @@ class ElevatorViewModel : ViewModel() {
     private var moveJob: Job? = null
 
     fun onFloorPressed(targetFloor: Int) {
+        addLog("Button pressed: $targetFloor")
         elevatorQueue.addFloor(targetFloor)
+        addLog("Queue: ${elevatorQueue.queue.value}")
         val status = elevatorControl.status()
         val canStartMove = status != ElevatorProps.Status.POWER_OFF &&
                 status != ElevatorProps.Status.MOVING_UP &&
@@ -136,8 +161,10 @@ class ElevatorViewModel : ViewModel() {
             val current = _currentFloor.value
 
             if (destination == current) {
+                addLog("Reached target floor $current")
                 _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(current))
                 elevatorQueue.removeFloor(current)
+                addLog("Queue: ${elevatorQueue.queue.value}")
 
                 openDoor()
                 _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
@@ -153,8 +180,10 @@ class ElevatorViewModel : ViewModel() {
             if (reached) {
                 if (elevatorQueue.peekNextFloor() == _currentFloor.value) {
                     val arrivedFloor = _currentFloor.value
+                    addLog("Reached target floor $arrivedFloor")
                     _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(arrivedFloor))
                     elevatorQueue.removeFloor(arrivedFloor)
+                    addLog("Queue: ${elevatorQueue.queue.value}")
 
                     openDoor()
                     _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
@@ -164,6 +193,7 @@ class ElevatorViewModel : ViewModel() {
     }
 
     fun reportDoorState(doorState: ElevatorDoorState) {
+        addLog("Door State: $doorState")
         viewModelScope.launch {
             elevatorControl.reportDoorStatus(doorState)
         }
@@ -177,6 +207,7 @@ class ElevatorViewModel : ViewModel() {
             elevatorControl.status() == ElevatorProps.Status.TARGET_FLOOR_REACHED ||
             elevatorControl.status() == ElevatorProps.Status.DOOR_CLOSING
         ) {
+            addLog("Request: Open Door")
             _openDoor.value = true
             reportDoorState(ElevatorDoorState.OPENING)
             startAutoCloseTimer()
@@ -191,6 +222,7 @@ class ElevatorViewModel : ViewModel() {
             // Wait for the door to be fully open
             elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
 
+            addLog("Auto-close timer started")
             // 1. Wait for the close door delay
             delay(ElevatorConfig.CLOSE_DOOR_DELAY)
 
@@ -206,8 +238,12 @@ class ElevatorViewModel : ViewModel() {
      * Returns true if the door is closing, false otherwise.
      */
     fun closeDoor(): Boolean {
-        if (_isProximityObstructed.value) return false
+        if (_isProximityObstructed.value) {
+            addLog("Request: Close Door (DENIED: Obstructed)")
+            return false
+        }
         if (elevatorControl.status() == ElevatorProps.Status.DOOR_OPEN) {
+            addLog("Request: Close Door")
             _openDoor.value = false
             reportDoorState(ElevatorDoorState.CLOSING)
             return true

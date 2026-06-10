@@ -53,6 +53,7 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
             val serviceDirection by elevatorViewModel.serviceDirection.collectAsState()
             val openDoor by elevatorViewModel.openDoor.collectAsState()
             val floorsInQueue by elevatorViewModel.floorsInQueue.collectAsState()
+            val logs by elevatorViewModel.logs.collectAsState()
             val onDoorStateChangeStable = remember { { state: ElevatorDoorState -> onDoorStateChange(state) } }
 
             ElevatorSimulatorTheme {
@@ -68,6 +69,7 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
                         lowestFloor = elevatorViewModel.getLowestFloor(),
                         openDoor = openDoor,
                         floorsInQueue = floorsInQueue,
+                        logs = logs,
                         onDoorStateChange = onDoorStateChangeStable,
                         powerOn = ::powerOn,
                         powerOff = ::powerOff,
