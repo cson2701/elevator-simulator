@@ -11,7 +11,6 @@ import com.example.elevatorsimulator.elevator.config.ElevatorConfig
 import com.example.elevatorsimulator.elevator.view.compose.ElevatorDoorState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +40,10 @@ class ElevatorViewModel : ViewModel() {
 
     private val elevatorQueue = ElevatorQueue()
     val floorsInQueue: StateFlow<List<Int>> = elevatorQueue.queue
+
+    private val _isProximityObstructed = MutableStateFlow(false)
+
+    private var doorClosingJob: Job? = null
 
     private fun randomizeInitCurrentFloor(): Int {
         val lowestFloor = elevatorConfig.getLowestFloor()
@@ -96,6 +99,13 @@ class ElevatorViewModel : ViewModel() {
         }
     }
 
+    fun setProximityObstructed(obstructed: Boolean) {
+        _isProximityObstructed.value = obstructed
+        if (obstructed && elevatorControl.status() == ElevatorProps.Status.DOOR_CLOSING) {
+            openDoor()
+        }
+    }
+
     private var moveJob: Job? = null
 
     fun onFloorPressed(targetFloor: Int) {
@@ -130,13 +140,6 @@ class ElevatorViewModel : ViewModel() {
                 elevatorQueue.removeFloor(current)
 
                 openDoor()
-                coroutineScope {
-                    launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
-                    launch {
-                        elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
-                    }
-                }
-                closeDoor()
                 _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
                 continue
             }
@@ -176,24 +179,34 @@ class ElevatorViewModel : ViewModel() {
         ) {
             _openDoor.value = true
             reportDoorState(ElevatorDoorState.OPENING)
-            viewModelScope.launch {
-                coroutineScope {
-                    launch { delay(ElevatorConfig.CLOSE_DOOR_DELAY) }
-                    launch {
-                        elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
-                    }
-                }
-                closeDoor()
-            }
+            startAutoCloseTimer()
             return true
         }
         return false
+    }
+
+    private fun startAutoCloseTimer() {
+        doorClosingJob?.cancel()
+        doorClosingJob = viewModelScope.launch {
+            // Wait for the door to be fully open
+            elevatorStatus.first { it == ElevatorProps.Status.DOOR_OPEN }
+
+            // 1. Wait for the close door delay
+            delay(ElevatorConfig.CLOSE_DOOR_DELAY)
+
+            // 2. Wait for the proximity sensor to be clear
+            _isProximityObstructed.first { !it }
+
+            // 3. Close the door
+            closeDoor()
+        }
     }
 
     /**
      * Returns true if the door is closing, false otherwise.
      */
     fun closeDoor(): Boolean {
+        if (_isProximityObstructed.value) return false
         if (elevatorControl.status() == ElevatorProps.Status.DOOR_OPEN) {
             _openDoor.value = false
             reportDoorState(ElevatorDoorState.CLOSING)

@@ -1,6 +1,10 @@
 package com.example.elevatorsimulator.elevator.view
 
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -27,12 +31,16 @@ import com.example.elevatorsimulator.ui.theme.ElevatorSimulatorTheme
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class ElevatorActivity : ComponentActivity() {
+class ElevatorActivity : ComponentActivity(), SensorEventListener {
     private val elevatorViewModel by viewModels<ElevatorViewModel>()
     private var tts: TextToSpeech? = null
+    private lateinit var sensorManager: SensorManager
+    private var proximitySensor: Sensor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.getDefault()
@@ -133,10 +141,29 @@ class ElevatorActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        proximitySensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
         if (ElevatorConfig.getInstance().getLowestFloor() == 0 || ElevatorConfig.getInstance().getHighestFloor() == 0) {
             startActivity(Intent(this, ConfigActivity::class.java))
             finish()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_PROXIMITY) {
+            val distance = event.values[0]
+            val isObstructed = distance < (proximitySensor?.maximumRange ?: 0f)
+            elevatorViewModel.setProximityObstructed(isObstructed)
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
     override fun onDestroy() {
