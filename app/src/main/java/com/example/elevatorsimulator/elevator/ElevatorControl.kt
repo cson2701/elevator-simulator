@@ -40,7 +40,6 @@ class ElevatorControl private constructor(
             currentFloor += if (currentFloor < targetFloor) 1 else -1
             elevatorListener.onFloorChangeListener(currentFloor)
         }
-        setStatus(ElevatorProps.Status.TARGET_FLOOR_REACHED)
         onTargetFloorReached(true)
     }
 
@@ -53,6 +52,10 @@ class ElevatorControl private constructor(
             ElevatorDoorState.CLOSING -> setStatus(ElevatorProps.Status.DOOR_CLOSING)
             ElevatorDoorState.CLOSING_STUCK -> {}
         }
+    }
+
+    override fun reportTargetReached() {
+        setStatus(ElevatorProps.Status.TARGET_FLOOR_REACHED)
     }
 
     override suspend fun powerOn() {

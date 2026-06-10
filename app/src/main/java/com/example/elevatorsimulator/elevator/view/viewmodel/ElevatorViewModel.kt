@@ -135,6 +135,11 @@ class ElevatorViewModel : ViewModel() {
         addLog("Button pressed: $targetFloor")
         elevatorQueue.addFloor(targetFloor)
         addLog("Queue: ${elevatorQueue.queue.value}")
+
+        if (targetFloor == currentFloor.value) {
+            openDoor()
+        }
+
         val status = elevatorControl.status()
         val canStartMove = status != ElevatorProps.Status.POWER_OFF &&
                 status != ElevatorProps.Status.MOVING_UP &&
@@ -162,12 +167,17 @@ class ElevatorViewModel : ViewModel() {
 
             if (destination == current) {
                 addLog("Reached target floor $current")
+                elevatorControl.reportTargetReached()
                 _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(current))
                 elevatorQueue.removeFloor(current)
                 addLog("Queue: ${elevatorQueue.queue.value}")
 
-                openDoor()
-                _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                if (openDoor()) {
+                    // Wait for the door to move away from IDLE (to OPENING)
+                    elevatorStatus.first { it != ElevatorProps.Status.IDLE }
+                    // Now wait for it to return to IDLE
+                    elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                }
                 continue
             }
 
@@ -181,12 +191,17 @@ class ElevatorViewModel : ViewModel() {
                 if (elevatorQueue.peekNextFloor() == _currentFloor.value) {
                     val arrivedFloor = _currentFloor.value
                     addLog("Reached target floor $arrivedFloor")
+                    elevatorControl.reportTargetReached()
                     _elevatorEvent.trySend(ElevatorEvent.TargetFloorReached(arrivedFloor))
                     elevatorQueue.removeFloor(arrivedFloor)
                     addLog("Queue: ${elevatorQueue.queue.value}")
 
-                    openDoor()
-                    _elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                    if (openDoor()) {
+                        // Wait for the door to move away from IDLE (to OPENING)
+                        elevatorStatus.first { it != ElevatorProps.Status.IDLE }
+                        // Now wait for it to return to IDLE
+                        elevatorStatus.first { it == ElevatorProps.Status.IDLE }
+                    }
                 }
             }
         }
@@ -194,18 +209,19 @@ class ElevatorViewModel : ViewModel() {
 
     fun reportDoorState(doorState: ElevatorDoorState) {
         addLog("Door State: $doorState")
-        viewModelScope.launch {
-            elevatorControl.reportDoorStatus(doorState)
-        }
+        elevatorControl.reportDoorStatus(doorState)
     }
 
-    /**
-     * Returns true if the door is opening, false otherwise.
-     */
     fun openDoor(): Boolean {
-        if (elevatorControl.status() == ElevatorProps.Status.IDLE ||
-            elevatorControl.status() == ElevatorProps.Status.TARGET_FLOOR_REACHED ||
-            elevatorControl.status() == ElevatorProps.Status.DOOR_CLOSING
+        val status = elevatorControl.status()
+        if (status == ElevatorProps.Status.DOOR_OPEN || status == ElevatorProps.Status.DOOR_OPENING) {
+            addLog("Request: Open Door (Reset Timer)")
+            startAutoCloseTimer()
+            return true
+        }
+        if (status == ElevatorProps.Status.IDLE ||
+            status == ElevatorProps.Status.TARGET_FLOOR_REACHED ||
+            status == ElevatorProps.Status.DOOR_CLOSING
         ) {
             addLog("Request: Open Door")
             _openDoor.value = true
