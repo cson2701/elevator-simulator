@@ -1,0 +1,45 @@
+name: Build APK on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elevator-simulator-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Post to Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C0B9S2W064A'
+          slack-message: |
+            *New APK Build Available* ✅
+            The PR has been merged and the APK is ready.
+            *Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            *Artifacts can be downloaded from the Summary page.*
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.APK_DISTRIBUTION_BOT_TOKEN }}
