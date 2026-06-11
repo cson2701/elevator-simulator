@@ -27,3 +27,8 @@ else
   git checkout -b "$BRANCH_NAME"
   echo "Created and checked out branch: $BRANCH_NAME"
 fi
+
+# Fetch and rebase onto main
+echo "Fetching latest main and rebasing..."
+git fetch origin main
+git rebase origin/main

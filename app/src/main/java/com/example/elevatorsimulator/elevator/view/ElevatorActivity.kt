@@ -72,14 +72,14 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
                         floorsInQueue = floorsInQueue,
                         logs = logs,
                         onDoorStateChange = onDoorStateChangeStable,
-                        powerOn = ::powerOn,
-                        powerOff = ::powerOff,
-                        onOpenDoor = { elevatorViewModel.openDoor() },
-                        onCloseDoor = { elevatorViewModel.closeDoor() },
+                        powerOn = elevatorViewModel::powerOn,
+                        powerOff = elevatorViewModel::powerOff,
+                        onOpenDoor = elevatorViewModel::openDoor,
+                        onCloseDoor = elevatorViewModel::closeDoor,
                         onFloorPressed = elevatorViewModel::onFloorPressed,
                         onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) },
-                        onAlarmPress = { startAlarm() },
-                        onAlarmRelease = { stopAlarm() }
+                        onAlarmPress = ::startAlarm,
+                        onAlarmRelease = ::stopAlarm
                     )
                 }
             }
@@ -141,14 +141,6 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
 
     private fun onDoorStateChange(doorState: ElevatorDoorState) {
         elevatorViewModel.reportDoorState(doorState)
-    }
-
-    private fun powerOn() {
-        elevatorViewModel.powerOn()
-    }
-
-    private fun powerOff() {
-        elevatorViewModel.powerOff()
     }
 
     private fun showToast(message: String) {
