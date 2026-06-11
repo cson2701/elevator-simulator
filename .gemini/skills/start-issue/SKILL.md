@@ -14,7 +14,8 @@ When asked to "start issue <number>", Gemini will:
 2. Create and checkout a branch named `<issue_number>-<slugified-title>` (using `create_branch.sh`).
 3. Fetch the latest `main` and rebase the new branch onto it.
 4. Analyze the issue content and current codebase to propose a step-by-step implementation plan.
-5. Present the plan to the user and ask for approval to proceed.
+5. **Mandatory Step**: Present the implementation plan to the user for review.
+6. **Wait for Approval**: Gemini **must not** start any coding or file modifications until the user explicitly says "yes" or gives approval to the proposed plan.
 
 ## Commands
 
