@@ -68,8 +68,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: Build ${{ github.run_number }}
+          tag_name: v${{ steps.fetch_details.outputs.issue_number }}
+          name: Build ${{ steps.fetch_details.outputs.issue_number }}
           files: |
             app/build/outputs/apk/debug/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
             app/build/outputs/apk/release/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
@@ -112,8 +112,8 @@ jobs:
             ${{ steps.fetch_details.outputs.issue_url }}
             ${{ steps.fetch_details.outputs.pr_url }}
 
-            *Release APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
-            *Debug APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
+            *Release APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ steps.fetch_details.outputs.issue_number }}/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
+            *Debug APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ steps.fetch_details.outputs.issue_number }}/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
             *Run Summary:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.APK_DISTRIBUTION_BOT_TOKEN }}
