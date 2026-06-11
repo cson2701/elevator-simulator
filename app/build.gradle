@@ -13,11 +13,11 @@ if (keystorePropertiesFile.exists()) {
 android {
     def buildNumber = project.findProperty("issueNumber") ?: "0"
 
-    namespace 'com.example.elevatorsimulator'
+    namespace 'com.scrapps.elevatorsimulator'
     compileSdk = 37
 
     defaultConfig {
-        applicationId "com.example.elevatorsimulator"
+        applicationId "com.scrapps.elevatorsimulator"
         minSdk 26
         targetSdk 37
         versionCode 1
