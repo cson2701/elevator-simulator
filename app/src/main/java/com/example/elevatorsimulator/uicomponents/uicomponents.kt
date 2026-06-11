@@ -2,8 +2,15 @@
 
 package com.example.elevatorsimulator.uicomponents
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -12,34 +19,60 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.elevatorsimulator.R
+import com.example.elevatorsimulator.ui.theme.colors.Default
+import com.example.elevatorsimulator.ui.theme.colors.Icon
+import com.example.elevatorsimulator.ui.theme.colors.PowerButton
+import com.example.elevatorsimulator.ui.theme.colors.Pressed
 
 @Composable
 fun PowerIcon(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     isPowerOn: Boolean,
+    isPoweringOn: Boolean = false,
 ) {
-    val teal = colorResource(id = R.color.teal_200)
-    val grey = colorResource(id = R.color.grey)
+    val onColor = PowerButton.On.Default
+    val onPressedColor = PowerButton.On.Pressed
+    val offColor = PowerButton.Off.Default
+    val offPressedColor = PowerButton.Off.Pressed
     val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val infiniteTransition = rememberInfiniteTransition(label = "PowerIconTransition")
+    val flashingColor by infiniteTransition.animateColor(
+        initialValue = offColor,
+        targetValue = onColor,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PowerIconColor"
+    )
+
+    val buttonColor = when {
+        isPressed -> if (isPowerOn) onPressedColor else offPressedColor
+        isPoweringOn -> flashingColor
+        isPowerOn -> onColor
+        else -> offColor
+    }
+
     Box(
         modifier = modifier
             .clickable(
                 interactionSource = interactionSource,
-                indication = ripple(bounded = false, radius = 24.dp)
+                indication = null
             ) {
                 onClick()
             }
@@ -51,14 +84,14 @@ fun PowerIcon(
                     val circleRadius = iconSize.minDimension / 2
                     val circleCenter = Offset(iconSize.width / 2, iconSize.height / 2)
                     drawCircle(
-                        color = if (isPowerOn) teal else grey,
+                        color = buttonColor,
                         radius = circleRadius,
                         center = circleCenter
                     )
                 },
             painter = painterResource(id = R.drawable.ic_power),
             contentDescription = "Power button",
-            tint = colorResource(id = R.color.white) // Replace with your actual green color resource
+            tint = PowerButton.Icon
         )
     }
 }
@@ -67,6 +100,12 @@ fun PowerIcon(
 @Preview
 fun PowerIconPreviewOn() {
     PowerIcon(isPowerOn = true)
+}
+
+@Composable
+@Preview
+fun PowerIconPreviewPoweringOn() {
+    PowerIcon(isPowerOn = false, isPoweringOn = true)
 }
 
 @Composable
@@ -85,6 +124,6 @@ fun NumberInput(placeholder: String, value: String, onValueChange: (String) -> U
         modifier = Modifier
             .width(80.dp)
             .padding(8.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
     )
 }

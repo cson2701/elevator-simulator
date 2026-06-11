@@ -20,8 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -78,7 +78,7 @@ fun ElevatorScreen(
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
             SevenSegmentPanel(
-                value = if (elevatorStatus == ElevatorProps.Status.POWER_OFF) null else currentFloor,
+                value = if (elevatorStatus == ElevatorProps.Status.POWER_OFF || elevatorStatus == ElevatorProps.Status.POWER_ON) null else currentFloor,
                 serviceDirection = serviceDirection,
                 modifier = Modifier.width(110.dp)
             )
@@ -102,21 +102,21 @@ fun ElevatorScreen(
         ) {
             OperationButton(
                 onClick = onOpenDoor,
-                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON
             ) {
                 Text("<|>", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             OperationButton(
                 onClick = onCloseDoor,
-                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON
             ) {
                 Text(">|<", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             OperationButton(
                 onClick = onAlarmClick,
-                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON
             ) {
                 Text("🔔", fontSize = 20.sp)
             }
@@ -139,13 +139,13 @@ fun ElevatorScreen(
                     lowestFloor = lowestFloor,
                     floorsInQueue = floorsInQueue,
                     onFloorClick = { onFloorPressed(it) },
-                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF
+                    enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON
                 )
             }
         }
 
         // Bottom Operations Bar
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -165,10 +165,15 @@ fun ElevatorScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     PowerIcon(
-                        isPowerOn = elevatorStatus != ElevatorProps.Status.POWER_OFF,
+                        isPowerOn = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON,
+                        isPoweringOn = elevatorStatus == ElevatorProps.Status.POWER_ON,
                         modifier = Modifier.size(32.dp),
                         onClick = {
-                            if (elevatorStatus == ElevatorProps.Status.POWER_OFF) powerOn() else powerOff()
+                            when (elevatorStatus) {
+                                ElevatorProps.Status.POWER_OFF -> powerOn()
+                                ElevatorProps.Status.POWER_ON -> {} // Do nothing while powering on
+                                else -> powerOff()
+                            }
                         }
                     )
                 }

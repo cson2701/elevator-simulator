@@ -60,6 +60,7 @@ class ElevatorControl private constructor(
 
     override suspend fun powerOn() {
         if (status == ElevatorProps.Status.POWER_OFF) {
+            setStatus(ElevatorProps.Status.POWER_ON)
             delay(1500)
             setStatus(ElevatorProps.Status.IDLE)
         }
