@@ -36,6 +36,7 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
     private var tts: TextToSpeech? = null
     private lateinit var sensorManager: SensorManager
     private var proximitySensor: Sensor? = null
+    private var alarmMediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +78,8 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
                         onCloseDoor = { elevatorViewModel.closeDoor() },
                         onFloorPressed = elevatorViewModel::onFloorPressed,
                         onConfigClick = { startActivity(Intent(this, ConfigActivity::class.java)) },
-                        onAlarmClick = { playAlarm() }
+                        onAlarmPress = { startAlarm() },
+                        onAlarmRelease = { stopAlarm() }
                     )
                 }
             }
@@ -113,12 +115,28 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
         mediaPlayer.start()
     }
 
-    private fun playAlarm() {
-        val mediaPlayer = MediaPlayer.create(this, R.raw.elevator_ding)
-        mediaPlayer.setOnCompletionListener {
-            it.release()
+    private fun startAlarm() {
+        if (alarmMediaPlayer == null) {
+            alarmMediaPlayer = MediaPlayer.create(this, R.raw.elevator_ding).apply {
+                isLooping = true
+                start()
+            }
         }
-        mediaPlayer.start()
+    }
+
+    private fun stopAlarm() {
+        alarmMediaPlayer?.apply {
+            try {
+                if (isPlaying) {
+                    stop()
+                }
+            } catch (_: Exception) {
+                // Ignore
+            } finally {
+                release()
+            }
+        }
+        alarmMediaPlayer = null
     }
 
     private fun onDoorStateChange(doorState: ElevatorDoorState) {
@@ -169,6 +187,7 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
     override fun onDestroy() {
         tts?.stop()
         tts?.shutdown()
+        stopAlarm()
         super.onDestroy()
     }
 }

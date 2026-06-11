@@ -3,6 +3,8 @@ package com.example.elevatorsimulator.elevator.view.compose
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,8 +68,20 @@ fun ElevatorScreen(
     onOpenDoor: () -> Unit,
     onCloseDoor: () -> Unit,
     onConfigClick: () -> Unit,
-    onAlarmClick: () -> Unit = {},
+    onAlarmPress: () -> Unit = {},
+    onAlarmRelease: () -> Unit = {},
 ) {
+    val alarmInteractionSource = remember { MutableInteractionSource() }
+    val isAlarmPressed by alarmInteractionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isAlarmPressed) {
+        if (isAlarmPressed) {
+            onAlarmPress()
+        } else {
+            onAlarmRelease()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -115,7 +131,8 @@ fun ElevatorScreen(
             }
 
             OperationButton(
-                onClick = onAlarmClick,
+                onClick = {},
+                interactionSource = alarmInteractionSource,
                 enabled = elevatorStatus != ElevatorProps.Status.POWER_OFF && elevatorStatus != ElevatorProps.Status.POWER_ON
             ) {
                 Text("🔔", fontSize = 20.sp)
@@ -214,6 +231,7 @@ fun OperationButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable () -> Unit
 ) {
     OutlinedButton(
@@ -222,6 +240,7 @@ fun OperationButton(
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(0.dp),
         enabled = enabled,
+        interactionSource = interactionSource,
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary
         )
@@ -330,5 +349,7 @@ fun ElevatorScreenPreview() {
         onOpenDoor = {},
         onCloseDoor = {},
         onConfigClick = {},
+        onAlarmPress = {},
+        onAlarmRelease = {},
     )
 }
