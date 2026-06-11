@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -39,7 +39,7 @@ fun PowerIcon(
         modifier = modifier
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(bounded = false, radius = 24.dp)
+                indication = ripple(bounded = false, radius = 24.dp)
             ) {
                 onClick()
             }
