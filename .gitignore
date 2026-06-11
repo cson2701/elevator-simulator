@@ -16,3 +16,8 @@ local.properties
 /.idea/
 /.idea/gradle.xml
 /.idea/misc.xml
+
+# Keystore and signing
+*.jks
+*.keystore
+keystore.properties
