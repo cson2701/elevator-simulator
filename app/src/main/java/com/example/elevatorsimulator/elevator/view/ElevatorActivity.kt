@@ -126,12 +126,10 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun powerOn() {
-        showToast("Powering on...")
         elevatorViewModel.powerOn()
     }
 
     private fun powerOff() {
-        showToast("Powering off...")
         elevatorViewModel.powerOff()
     }
 

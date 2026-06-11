@@ -53,6 +53,8 @@ class ElevatorViewModel : ViewModel() {
 
     init {
         addLog("Elevator Config: Low=${elevatorConfig.getLowestFloor()}, High=${elevatorConfig.getHighestFloor()}")
+        addLog("Status: ${elevatorStatus.value}")
+        buildElevator()
     }
 
     private fun addLog(message: String) {
@@ -75,12 +77,7 @@ class ElevatorViewModel : ViewModel() {
     fun powerOn() {
         addLog("Powering on...")
         viewModelScope.launch {
-            try {
-                elevatorControl.powerOn()
-            } catch (_: UninitializedPropertyAccessException) {
-                buildElevator()
-                elevatorControl.powerOn()
-            }
+            elevatorControl.powerOn()
         }
     }
 
