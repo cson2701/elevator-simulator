@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -25,6 +27,18 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+          files: app/build/outputs/apk/debug/app-debug.apk
+          body: |
+            Automated build from merge to main.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload APK
         id: upload-artifact
         uses: actions/upload-artifact@v4
@@ -39,7 +53,7 @@ jobs:
           slack-message: |
             *New APK Build Available* ✅
             The PR has been merged and the APK is ready.
-            *Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            *Artifacts can be downloaded from the Summary page.*
+            *Direct APK Download:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/app-debug.apk
+            *Run Summary:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.APK_DISTRIBUTION_BOT_TOKEN }}
