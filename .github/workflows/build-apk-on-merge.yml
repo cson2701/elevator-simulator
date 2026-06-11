@@ -10,9 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: read
+      issues: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract PR and Issue Details
+        id: fetch_details
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          NUMBER=$(echo "$COMMIT_MSG" | grep -oP '\[\K\d+(?=\])' | head -n 1 || echo "")
+          
+          if [ -n "$NUMBER" ]; then
+            TITLE=$(gh issue view "$NUMBER" --json title --jq '.title' || echo "Unknown Title")
+            echo "issue_title=$TITLE" >> $GITHUB_OUTPUT
+            echo "pr_url=${{ github.server_url }}/${{ github.repository }}/pull/$NUMBER" >> $GITHUB_OUTPUT
+            echo "issue_url=${{ github.server_url }}/${{ github.repository }}/issues/$NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "issue_title=Manual Build" >> $GITHUB_OUTPUT
+            echo "pr_url=" >> $GITHUB_OUTPUT
+            echo "issue_url=" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -50,19 +73,29 @@ jobs:
             app/build/outputs/apk/release/app-release.apk
           body: |
             Automated build from merge to main.
+            
+            **Changes in this build:**
+            ${{ steps.fetch_details.outputs.issue_title }}
+            ${{ steps.fetch_details.outputs.issue_url }}
+            ${{ steps.fetch_details.outputs.pr_url }}
+            
+            **Downloads:**
             - **Debug APK:** For testing and development.
             - **Release APK:** Signed and ready for distribution.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APKs
-        id: upload-artifact
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: elevator-simulator-apks
-          path: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release.apk
+          name: debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: app/build/outputs/apk/release/app-release.apk
 
       - name: Post to Slack
         uses: slackapi/slack-github-action@v1.25.0
@@ -71,6 +104,12 @@ jobs:
           slack-message: |
             *New Build Available* ✅
             The PR has been merged and the APKs are ready.
+            
+            *Changes in this build:*
+            ${{ steps.fetch_details.outputs.issue_title }}
+            ${{ steps.fetch_details.outputs.issue_url }}
+            ${{ steps.fetch_details.outputs.pr_url }}
+
             *Release APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/app-release.apk
             *Debug APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/app-debug.apk
             *Run Summary:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
