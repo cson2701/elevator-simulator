@@ -10,6 +10,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    def buildNumber = project.findProperty("issueNumber") ?: "0"
+
     namespace 'com.example.elevatorsimulator'
     compileSdk = 36
 
@@ -58,6 +60,12 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "elevator-simulator-${variant.name}-${defaultConfig.versionName}-${buildNumber}.apk"
         }
     }
 }

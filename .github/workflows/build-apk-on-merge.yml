@@ -27,10 +27,12 @@ jobs:
           if [ -n "$NUMBER" ]; then
             TITLE=$(gh issue view "$NUMBER" --json title --jq '.title' || echo "Unknown Title")
             echo "issue_title=$TITLE" >> $GITHUB_OUTPUT
+            echo "issue_number=$NUMBER" >> $GITHUB_OUTPUT
             echo "pr_url=${{ github.server_url }}/${{ github.repository }}/pull/$NUMBER" >> $GITHUB_OUTPUT
             echo "issue_url=${{ github.server_url }}/${{ github.repository }}/issues/$NUMBER" >> $GITHUB_OUTPUT
           else
             echo "issue_title=Manual Build" >> $GITHUB_OUTPUT
+            echo "issue_number=0" >> $GITHUB_OUTPUT
             echo "pr_url=" >> $GITHUB_OUTPUT
             echo "issue_url=" >> $GITHUB_OUTPUT
           fi
@@ -60,7 +62,7 @@ jobs:
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> keystore.properties
 
       - name: Build APKs (Debug & Release)
-        run: ./gradlew assembleDebug assembleRelease
+        run: ./gradlew assembleDebug assembleRelease -PissueNumber=${{ steps.fetch_details.outputs.issue_number }}
 
       - name: Create Release
         id: create_release
@@ -69,8 +71,8 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Build ${{ github.run_number }}
           files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/debug/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
+            app/build/outputs/apk/release/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
           body: |
             Automated build from merge to main.
             
@@ -89,13 +91,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
 
       - name: Post to Slack
         uses: slackapi/slack-github-action@v1.25.0
@@ -110,8 +112,8 @@ jobs:
             ${{ steps.fetch_details.outputs.issue_url }}
             ${{ steps.fetch_details.outputs.pr_url }}
 
-            *Release APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/app-release.apk
-            *Debug APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/app-debug.apk
+            *Release APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/elevator-simulator-release-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
+            *Debug APK:* ${{ github.server_url }}/${{ github.repository }}/releases/download/v${{ github.run_number }}/elevator-simulator-debug-1.0-${{ steps.fetch_details.outputs.issue_number }}.apk
             *Run Summary:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.APK_DISTRIBUTION_BOT_TOKEN }}
