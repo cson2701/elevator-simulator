@@ -2,7 +2,20 @@
 <resources>
     <string name="save">保存</string>
     <string name="app_name">电梯模拟器</string>
-    <string name="set_highest_floor">设置最高楼层</string>
-    <string name="set_lowest_floor">设置最低楼层</string>
+    <string name="set_highest_floor">最高楼层</string>
+    <string name="set_lowest_floor">最低楼层</string>
+    <string name="floor_range">楼层范围</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="elevator_speed">电梯运行速度</string>
+    <string name="door_opening_duration">开门耗时</string>
+    <string name="door_closing_duration">关门耗时</string>
+    <string name="play_sound">到达时播放声音</string>
+    <string name="announce_floor">到达时语音播报</string>
     <string name="target_floor">目的楼层</string>
+    <string name="lowest">最低</string>
+    <string name="highest">最高</string>
+    <string name="section_floors">楼层配置</string>
+    <string name="section_timings">运行耗时</string>
+    <string name="section_audio">音效提醒</string>
 </resources>
