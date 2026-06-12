@@ -27,13 +27,17 @@ fun ElevatorDoorContent(
     openDoor: Boolean,
     elevatorStatus: ElevatorProps.Status,
     modifier: Modifier = Modifier,
+    doorOpenDuration: Long = DOOR_DURATION_DEFAULT,
+    doorCloseDuration: Long = DOOR_DURATION_DEFAULT,
     onDoorStateChange: (ElevatorDoorState) -> Unit,
 ) {
     val currentOnDoorStateChange by rememberUpdatedState(onDoorStateChange)
 
+    val currentDuration = if (openDoor) doorOpenDuration else doorCloseDuration
+
     val progress by animateFloatAsState(
         targetValue = if (openDoor) 1f else 0f,
-        animationSpec = tween(durationMillis = if (openDoor) DOOR_OPEN_DURATION.toInt() else DOOR_CLOSE_DURATION.toInt()),
+        animationSpec = tween(durationMillis = currentDuration.toInt()),
         label = "door",
         finishedListener = { finalValue ->
             if (finalValue == 1f) {
@@ -193,8 +197,7 @@ private class ElevatorDoorContentPreviewProvider : PreviewParameterProvider<Bool
         get() = sequenceOf(true, false)
 }
 
-const val DOOR_OPEN_DURATION = 1200L
-const val DOOR_CLOSE_DURATION = 1500L
+const val DOOR_DURATION_DEFAULT = 1200L
 
 enum class ElevatorDoorState {
     OPENING,

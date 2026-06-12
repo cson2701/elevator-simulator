@@ -69,6 +69,8 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
                         highestFloor = elevatorViewModel.getHighestFloor(),
                         lowestFloor = elevatorViewModel.getLowestFloor(),
                         openDoor = openDoor,
+                        doorOpenDuration = ElevatorConfig.getInstance().getDoorOpenDuration(),
+                        doorCloseDuration = ElevatorConfig.getInstance().getDoorCloseDuration(),
                         floorsInQueue = floorsInQueue,
                         logs = logs,
                         onDoorStateChange = onDoorStateChangeStable,
@@ -101,18 +103,28 @@ class ElevatorActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun playDing(targetFloor: Int) {
-        val mediaPlayer = MediaPlayer.create(this, R.raw.elevator_ding)
-        mediaPlayer.setOnCompletionListener {
+        val config = ElevatorConfig.getInstance()
+        if (config.getPlaySound()) {
+            val mediaPlayer = MediaPlayer.create(this, R.raw.elevator_ding)
+            mediaPlayer.setOnCompletionListener {
+                announceFloor(targetFloor)
+                it.release()
+            }
+            mediaPlayer.start()
+        } else {
+            announceFloor(targetFloor)
+        }
+    }
+
+    private fun announceFloor(targetFloor: Int) {
+        if (ElevatorConfig.getInstance().getAnnounceFloor()) {
             tts?.speak(
                 "Floor, $targetFloor.",
                 TextToSpeech.QUEUE_FLUSH,
                 null,
                 "greeting"
             )
-
-            it.release()
         }
-        mediaPlayer.start()
     }
 
     private fun startAlarm() {

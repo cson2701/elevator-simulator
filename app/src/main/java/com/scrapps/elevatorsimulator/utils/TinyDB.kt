@@ -536,8 +536,7 @@ class TinyDB(private val context: Context) {
      * @param key the pref key to check
      */
     fun objectExists(key: String?): Boolean {
-        val gottenString = getString(key)
-        return gottenString!!.isNotEmpty()
+        return preferences.contains(key)
     }
 
     /**

@@ -59,6 +59,8 @@ fun ElevatorScreen(
     highestFloor: Int,
     lowestFloor: Int,
     openDoor: Boolean,
+    doorOpenDuration: Long = 1200L,
+    doorCloseDuration: Long = 1200L,
     floorsInQueue: List<Int>,
     logs: List<String>,
     onDoorStateChange: (ElevatorDoorState) -> Unit,
@@ -104,6 +106,8 @@ fun ElevatorScreen(
         ElevatorDoorContent(
             openDoor = openDoor,
             elevatorStatus = elevatorStatus,
+            doorOpenDuration = doorOpenDuration,
+            doorCloseDuration = doorCloseDuration,
             onDoorStateChange = onDoorStateChange
         )
 
