@@ -115,13 +115,18 @@ fun PowerIconPreviewOff() {
 }
 
 @Composable
-fun NumberInput(placeholder: String, value: String, onValueChange: (String) -> Unit) {
+fun NumberInput(
+    placeholder: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     OutlinedTextField(
         placeholder = { Text(text = placeholder, color = Color.Gray) },
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        modifier = Modifier
+        modifier = modifier
             .width(80.dp)
             .padding(8.dp),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),

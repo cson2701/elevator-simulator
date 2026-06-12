@@ -2,7 +2,20 @@
     <string name="app_name">ElevatorSimulator</string>
     <string name="title_activity_config" translatable="false">ConfigActivity</string>
     <string name="save">Save</string>
-    <string name="set_highest_floor">Set highest floor</string>
-    <string name="set_lowest_floor">Set lowest floor</string>
+    <string name="set_highest_floor">Highest floor</string>
+    <string name="set_lowest_floor">Lowest floor</string>
+    <string name="floor_range">Floor range</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="elevator_speed">Elevator speed</string>
+    <string name="door_opening_duration">Door open duration</string>
+    <string name="door_closing_duration">Door close duration</string>
+    <string name="play_sound">Play sound on arrival</string>
+    <string name="announce_floor">Announce floor on arrival</string>
     <string name="target_floor">Target floor</string>
+    <string name="lowest">Lowest</string>
+    <string name="highest">Highest</string>
+    <string name="section_floors">Floors</string>
+    <string name="section_timings">Timings</string>
+    <string name="section_audio">Audio</string>
 </resources>
