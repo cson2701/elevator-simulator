@@ -104,7 +104,7 @@ class ElevatorViewModel : ViewModel() {
             .setLowestFloor(elevatorConfig.getLowestFloor())
             .setHighestFloor(elevatorConfig.getHighestFloor())
             .setCurrentFloor(currentFloor.value)
-            .setSpeed(ElevatorProps.Speed.SPEED_1.value)
+            .setSpeed(elevatorConfig.getSpeed())
             .setNumberOfElevators(1)
             .build()
     }
